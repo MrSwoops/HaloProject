@@ -22,10 +22,7 @@ class IInteractable;
 class UCharacterInteractableComponent;
 struct FInputActionValue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTakeDamage, const float&, CurrentHealth, const float&, MaxHealth, const int32&, Damagetaken);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateInteractions, bool, Active, const FString&, Text);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUpdateGrenadesUI, const int32&, CurrentGrenadeSelection, const int32&, RegularGrenadesCount, const int32&, PlasmaGrenadesCount);
+
 
 UCLASS(config=Game)
 class AMyProjectCharacter : public ACharacter, public IIDamageable
@@ -92,13 +89,13 @@ public:
 
 #pragma region UIUpdates
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnTakeDamage OnReceiveDamage;
-
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FUpdateInteractions UpdateInteractions;
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FUpdateGrenadesUI UpdateGrenadesUI;
+	// UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	// FOnTakeDamage OnReceiveDamage;
+	//
+	// UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	// FUpdateInteractions UpdateInteractions;
+	// UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	// FUpdateGrenadesUI UpdateGrenadesUI;
 
 #pragma endregion UIUpdates
 

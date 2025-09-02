@@ -7,7 +7,7 @@
 #include "CharacterInteractableComponent.generated.h"
 
 
-class AMyProjectCharacter;
+class AGameplayCharacter;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYPROJECT_API UCharacterInteractableComponent : public USphereComponent
@@ -21,7 +21,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString InteractText;
 
-	virtual void OnInteract(AMyProjectCharacter* Character);
+	virtual void OnInteract(AGameplayCharacter* Character);
 
 	bool Enabled = true;
 

@@ -3,22 +3,54 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "WeaponInventory.generated.h"
 
 
+class AGrenade;
+class AWeapon;
 
-class UMyProjectWeaponComponent;
-/**
- * 
- */
-class MYPROJECT_API WeaponInventory
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class MYPROJECT_API UWeaponInventory : public UActorComponent
 {
-public:
-	WeaponInventory();
-	~WeaponInventory();
+	GENERATED_BODY()
 
+public:	
+	// Sets default values for this component's properties
+	UWeaponInventory();
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	AWeapon* CurrentWeapon = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	AWeapon* PrimaryWeapon = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	AWeapon* SecondaryWeapon = nullptr;
+
+	void PickUpWeapon(AWeapon* Weapon);
+	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
-	bool PickUpWeapon(UMyProjectWeaponComponent* Weapon);
+	bool ScavengeWeapon(AWeapon* Weapon);
 
-	UMyProjectWeaponComponent* PrimaryWeapon;
-	UMyProjectWeaponComponent* SecondaryWeapon;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int32 CurrentGrenade = 0;
+	int32 RegularGrenades = 2;
+	int32 PlasmaGrenades = 2;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	bool PickUpGrenade(AGrenade* Grenade);
+	void SwapGrenades();
+
+	
+	bool TryGetGrenade(const FVector& SpawnLocation, const FRotator& SpawnRotation, AGrenade*& OutGrenade);
+	bool TryMeleeWeapon();
+
+	void TryReloadWeapon();
+	void SwapWeapons();
+	void SwapWeapons(UEnhancedInputComponent* EnhancedInputComponent);
+	
 };

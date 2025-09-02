@@ -17,13 +17,12 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "CustomGameMode.h"
-#include "Grenade.h"
+#include "Weapons/Grenade.h"
 #include "WeaponUIWidget.h"
-#include "Weapon.h"
+#include "Weapons/Weapon.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AMyProjectCharacter
@@ -67,7 +66,7 @@ void AMyProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Health = MaxHealth;
-	UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
+	//UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
 }
 
 
@@ -119,14 +118,14 @@ void AMyProjectCharacter::TakeDamage(IDamageDealer* dd)
 	Health -= dd->GetDamage();
 	if (Health <= 0) Health = 0;
 	
-	OnReceiveDamage.Broadcast(Health, MaxHealth, dd->GetDamage());
+	//OnReceiveDamage.Broadcast(Health, MaxHealth, dd->GetDamage());
 }
 void AMyProjectCharacter::TakeDamage(const int32& Damage)
 {
 	Health -= Damage;
 	if (Health <= 0) Health = 0;
 	
-	OnReceiveDamage.Broadcast(Health, MaxHealth, Damage);
+	//OnReceiveDamage.Broadcast(Health, MaxHealth, Damage);
 }
 
 void AMyProjectCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)
@@ -134,7 +133,7 @@ void AMyProjectCharacter::AddInteractable(UCharacterInteractableComponent* Inter
 	if (Interactables.Contains(Interactable)) return;
 	Interactables.Push(Interactable);
 	CurrentInteraction = Interactable;
-	UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
+	//UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
 }
 
 void AMyProjectCharacter::RemoveInteractable(UCharacterInteractableComponent* Interactable)
@@ -144,11 +143,11 @@ void AMyProjectCharacter::RemoveInteractable(UCharacterInteractableComponent* In
 	{
 		// Assign previous if possible 
 		CurrentInteraction = Interactables[Interactables.Num() - 1];
-		UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
+		//UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
 	}
 	else
 	{
-		UpdateInteractions.Broadcast(false, "");
+		//UpdateInteractions.Broadcast(false, "");
 		CurrentInteraction = nullptr;
 	}
 }
@@ -182,7 +181,7 @@ void AMyProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		//UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
@@ -228,7 +227,7 @@ void AMyProjectCharacter::ThrowGrenade()
 	// Spawn the projectile at the muzzle
 	Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager->SpawnBullet(SpawnLocation, SpawnRotation, M9);
 	
-	UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
+	//UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
 }
 void AMyProjectCharacter::SwapGrenades()
 {
@@ -240,7 +239,7 @@ void AMyProjectCharacter::SwapGrenades()
 	{
 		CurrentGrenade = -1; // No Grenades
 	}
-	UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
+	//UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
 }
 
 void AMyProjectCharacter::SwapWeapons()
@@ -358,7 +357,7 @@ bool AMyProjectCharacter::PickUpGrenade(AGrenade* Grenade)
 		RegularGrenades++;
 	}
 	Grenade->ReturnToPool();
-	UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
+	//UpdateGrenadesUI.Broadcast(CurrentGrenade, RegularGrenades, PlasmaGrenades);
 	return true;
 }
 
@@ -367,7 +366,7 @@ bool AMyProjectCharacter::PickUpGrenade(AGrenade* Grenade)
 void AMyProjectCharacter::TryInteract()
 {
 	if (CurrentInteraction == nullptr) return;
-	CurrentInteraction->OnInteract(this);
+	//CurrentInteraction->OnInteract(this);
 }
 
 

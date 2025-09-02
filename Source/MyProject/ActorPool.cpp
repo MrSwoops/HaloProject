@@ -45,7 +45,7 @@ void UActorPool::AddToPool(int count)
 	}
 }
 
-APooledActor* UActorPool::SpawnFromTransform(FTransform transform)
+AActor* UActorPool::SpawnFromTransform(FTransform transform)
 {
 	APooledActor* actor = RetrieveFirst();
 	actor->SetActive(true);
@@ -67,7 +67,7 @@ APooledActor* UActorPool::RetrieveFirst()
 	return RetrieveFirst();
 }
 
-APooledActor* UActorPool::SpawnFromLocationAndRotation(FVector location, FRotator rotation)
+AActor* UActorPool::SpawnFromLocationAndRotation(FVector location, FRotator rotation)
 {
 	APooledActor* actor = RetrieveFirst();
 	actor->SetActorLocationAndRotation(location, rotation);

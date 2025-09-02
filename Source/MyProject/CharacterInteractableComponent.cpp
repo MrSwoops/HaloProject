@@ -3,6 +3,7 @@
 
 #include "CharacterInteractableComponent.h"
 
+#include "GameplayCharacter.h"
 #include "MyProjectCharacter.h"
 
 // Sets default values for this component's properties
@@ -27,7 +28,7 @@ void UCharacterInteractableComponent::OnSphereBeginOverlap(UPrimitiveComponent* 
 {
 	// Checking if it is a First Person Character overlapping
 	if (!Enabled) return;
-	if(AMyProjectCharacter* Character = Cast<AMyProjectCharacter>(OtherActor))
+	if(AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
 	{
 		if (InteractOnAreaEnter)
 		{
@@ -43,13 +44,13 @@ void UCharacterInteractableComponent::OnSphereBeginOverlap(UPrimitiveComponent* 
 void UCharacterInteractableComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (!Enabled) return;
-	if(AMyProjectCharacter* Character = Cast<AMyProjectCharacter>(OtherActor))
+	if(AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
 	{
 		Character->RemoveInteractable(this);
 	}
 }
 
-void UCharacterInteractableComponent::OnInteract(AMyProjectCharacter* Character)
+void UCharacterInteractableComponent::OnInteract(AGameplayCharacter* Character)
 {
 	
 }

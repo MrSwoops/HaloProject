@@ -7,6 +7,7 @@
 #include "BulletPoolManager.generated.h"
 
 
+class AGrenade;
 enum EWeapon : int;
 class UActorPool;
 
@@ -31,7 +32,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UActorPool* GrenadePool;
 
-	void SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType);
+	AActor* SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType);
+
+	AGrenade* SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType);
 
 protected:
 

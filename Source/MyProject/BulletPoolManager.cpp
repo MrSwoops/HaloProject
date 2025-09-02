@@ -4,7 +4,8 @@
 #include "BulletPoolManager.h"
 
 #include "ActorPool.h"
-#include "Weapon.h"
+#include "Weapons/Weapon.h"
+#include "Weapons/Grenade.h"
 
 // Sets default values for this component's properties
 UBulletPoolManager::UBulletPoolManager()
@@ -15,13 +16,28 @@ UBulletPoolManager::UBulletPoolManager()
 	GrenadePool = CreateDefaultSubobject<UActorPool>(TEXT("Grenade Pool"));
 }
 
+AGrenade* UBulletPoolManager::SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType)
+{
+	switch (NadeType) {
+	case 0: // Regular
+		return Cast<AGrenade>(GrenadePool->SpawnFromLocationAndRotation(Location, Rotation));
+		break;
+	case 1: // Plasma
+		
+		break;
+	default:
+		break;
+	}
+	return nullptr;
+}
 
-void UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType)
+
+AActor* UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType)
 {
 	switch (BulletType)
 	{
 	case M90:
-		M90Pool->SpawnFromLocationAndRotation(Location, Rotation);
+		return M90Pool->SpawnFromLocationAndRotation(Location, Rotation);
 	 	break;
 	// case BR55:
 	// 	break;
@@ -30,14 +46,15 @@ void UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator& Ro
 	// case M6CSOC:
 	// 	break;
 	case M99:
-		M99Pool->SpawnFromLocationAndRotation(Location, Rotation);
+		return M99Pool->SpawnFromLocationAndRotation(Location, Rotation);
 		break;
 	case M9:
-		GrenadePool->SpawnFromLocationAndRotation(Location, Rotation);
+		return GrenadePool->SpawnFromLocationAndRotation(Location, Rotation);
 	default:
-		BulletPool->SpawnFromLocationAndRotation(Location, Rotation);
-		break;
+		return BulletPool->SpawnFromLocationAndRotation(Location, Rotation);
+		//break;
 	}
+	//return nullptr;
 }
 
 
