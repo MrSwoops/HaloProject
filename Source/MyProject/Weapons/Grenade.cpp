@@ -7,9 +7,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "../MyProjectCharacter.h"
+#include "../GameplayCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "MyProject/ExplosiveComponent.h"
 
 // Sets default values
 AGrenade::AGrenade()
@@ -33,10 +34,7 @@ AGrenade::AGrenade()
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Vehicle));
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+	ExplosiveComp = CreateDefaultSubobject<UExplosiveComponent>(TEXT("Explosive"));
 }
 
 // Called when the game starts or when spawned
@@ -87,33 +85,7 @@ void AGrenade::Arm(const float& ArmTime)
 void AGrenade::Explode()
 {
 	Armed = false;
-	if (ExplosionSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, ExplosionSounds.Num() - 1);
-		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSounds[RandomSoundIndex], GetActorLocation());
-	} 
-
-	TArray<AActor*> IgnoredActors;
-	TArray<AActor*> OutActors;
-	
-	bool bHit = UKismetSystemLibrary::SphereOverlapActors(
-		GetWorld(),
-		GetActorLocation(),
-		ExplosionRadius,
-		ObjectTypes,
-		nullptr,
-		IgnoredActors,
-		OutActors
-	);
-
-	if (bHit)
-	{
-		for (AActor* Actor : OutActors)
-		{
-			OnExplode(Cast<UPrimitiveComponent>(GetRootComponent()), Actor,
-				Cast<UPrimitiveComponent>(Actor->GetRootComponent()));
-		}
-	}
+	ExplosiveComp->CreateExplosion();
 	ReturnToPool();
 }
 
@@ -126,31 +98,7 @@ void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPri
 	}
 }
 
-void AGrenade::OnExplode(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp)
-{
-	const float& Distance = FVector::Dist(GetActorLocation(), OtherActor->GetActorLocation());
-	const float& DistanceRatio = (ExplosionRadius - Distance) / ExplosionRadius;
-	if (AMyProjectCharacter* Character = Cast<AMyProjectCharacter>(OtherActor))
-	{
-		Character->TakeDamage(GetDamage() * DistanceRatio);
-		FVector Velocity = OtherActor->GetActorLocation() - GetActorLocation();
-		Velocity.Z += 0.5f;
-		Velocity.Normalize();
-		Character->GetCharacterMovement()->Launch(Velocity * 1500.0f * DistanceRatio);
-	}
-	else if (AGrenade* Grenade = Cast<AGrenade>(OtherActor))
-	{
-		Grenade->Arm(FuseTime / 2);
-	}
-	
-	if (OtherComp->IsSimulatingPhysics())
-	{
-		FVector Velocity = OtherActor->GetActorLocation() - GetActorLocation();
-		Velocity.Z += 0.5f;
-		Velocity.Normalize();
-		OtherComp->AddImpulseAtLocation(Velocity * 75000.0f * DistanceRatio, GetActorLocation());
-	} 
-}
+
 
 void AGrenade::FellOutOfWorld(const UDamageType& dmgType)
 {

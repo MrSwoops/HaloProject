@@ -4,11 +4,22 @@
 #include "BurstWeapon.h"
 #include "../GameplayCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "MyProject/PlayerCharacter.h"
 
 void ABurstWeapon::Fire()
 {
-	if (!Racked || CurrentMagAmmo <= 0 || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle) || Character == nullptr || Character->GetController() == nullptr)
+	if (!Racked || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle) || Character == nullptr || Character->GetController() == nullptr)
 	{
+		return;
+	}
+	if (CurrentMagAmmo <= 0)
+	{
+		if (CurrentReserveAmmo <= 0)
+		{
+			if (DryFireSound) UGameplayStatics::PlaySoundAtLocation(this, DryFireSound, Character->GetActorLocation());
+			return;
+		}
+		Reload();
 		return;
 	}
 	CurrentBurst = 0;
@@ -32,9 +43,9 @@ void ABurstWeapon::ShootBullet()
 	// Try and play a firing animation if specified
 	if (FireAnimation != nullptr)
 	{
-		//if (UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
 		{
-			//AnimInstance->Montage_Play(FireAnimation, 1.f);
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
 	

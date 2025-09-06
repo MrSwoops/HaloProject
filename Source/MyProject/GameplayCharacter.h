@@ -31,20 +31,27 @@ class MYPROJECT_API AGameplayCharacter : public ACharacter, public IIDamageable
 	GENERATED_BODY()
 public:
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Blueprintable, Category=Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* CharacterMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Blueprintable, Category=Mesh, meta = (AllowPrivateAccess = "true"))
+	//USkeletalMeshComponent* CharacterMesh;
 
 public:
 	AGameplayCharacter();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetRagdoll(bool Active);
+
+	
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Die();
+
+	bool IsDead = false;
+	
 #pragma region Weapons
 public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWeaponInventory* WeaponInventory;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetRagdoll(bool Active);
 	
 	void PickUpWeapon(AWeapon* Weapon);
 	UFUNCTION()
@@ -94,6 +101,6 @@ protected:
 	
 public:
 	
-	USkeletalMeshComponent* GetMesh2P() const { return CharacterMesh; }
+	//USkeletalMeshComponent* GetMesh2P() const { return CharacterMesh; }
 	
 };

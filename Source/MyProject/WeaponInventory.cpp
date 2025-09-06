@@ -7,6 +7,7 @@
 #include "Weapons/Grenade.h"
 #include "Kismet/GameplayStatics.h"
 #include "BulletPoolManager.h"
+#include "PlayerCharacter.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values for this component's properties
@@ -220,6 +221,10 @@ void UWeaponInventory::SwapWeapons(UEnhancedInputComponent* EnhancedInputCompone
 {
 	if (PrimaryWeapon && SecondaryWeapon)
 	{
+		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(CurrentWeapon->Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+		{
+			AnimInstance->StopAllMontages(0.0f);
+		}
 		CurrentWeapon->DisableWeapon();
 		CurrentWeapon->UnbindActions(EnhancedInputComponent);
 		

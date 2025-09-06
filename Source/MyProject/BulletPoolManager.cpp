@@ -14,6 +14,7 @@ UBulletPoolManager::UBulletPoolManager()
 	M90Pool = CreateDefaultSubobject<UActorPool>(TEXT("M90 Pool"));
 	M99Pool = CreateDefaultSubobject<UActorPool>(TEXT("M99 Pool"));
 	GrenadePool = CreateDefaultSubobject<UActorPool>(TEXT("Grenade Pool"));
+	RocketPool = CreateDefaultSubobject<UActorPool>(TEXT("Rocket Pool"));
 }
 
 AGrenade* UBulletPoolManager::SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType)
@@ -47,14 +48,13 @@ AActor* UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator&
 	// 	break;
 	case M99:
 		return M99Pool->SpawnFromLocationAndRotation(Location, Rotation);
-		break;
 	case M9:
 		return GrenadePool->SpawnFromLocationAndRotation(Location, Rotation);
+	case RocketLauncher:
+		return RocketPool->SpawnFromLocationAndRotation(Location, Rotation);
 	default:
 		return BulletPool->SpawnFromLocationAndRotation(Location, Rotation);
-		//break;
 	}
-	//return nullptr;
 }
 
 

@@ -23,7 +23,7 @@ enum EWeapon : int
 	BR55,
 	M99,
 	M9,
-	
+	RocketLauncher,
 	
 };
 
@@ -57,18 +57,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AttachWeapon(AGameplayCharacter* TargetCharacter);
 
-	UPROPERTY(EditDefaultsOnly)
-	float FireRate = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
 	TArray<USoundBase*> FireSounds;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	USoundBase* DryFireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	TArray<USoundBase*> ReloadSounds;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float FireRate = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	UAnimMontage* FireAnimation;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Fire();
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void FireHeld() {}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	UAnimMontage* ReloadAnimation;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Reload();
@@ -80,6 +85,10 @@ protected:
 	
 public:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	TArray<UAnimMontage*> FPMeleeAnimations;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	TArray<USoundBase*> MeleeSounds;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
@@ -116,7 +125,7 @@ protected:
 	UFUNCTION()
 	virtual void ShootBullet();
 
-	/** The Character holding this weapon*/
+public:
 	UPROPERTY()
 	AGameplayCharacter* Character;
 

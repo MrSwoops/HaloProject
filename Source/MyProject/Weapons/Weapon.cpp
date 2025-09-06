@@ -17,6 +17,7 @@
 #include "../WeaponUIWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
+#include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/PlayerCharacter.h"
 
 // Sets default values
@@ -50,8 +51,18 @@ void AWeapon::BeginPlay()
 
 void AWeapon::Fire()
 {
-	if (!Racked || CurrentMagAmmo <= 0 || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle) || Character == nullptr || Character->GetController() == nullptr)
+	if (!Racked || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle) || Character == nullptr || Character->GetController() == nullptr)
 	{
+		return;
+	}
+	if (CurrentMagAmmo <= 0)
+	{
+		if (CurrentReserveAmmo <= 0)
+		{
+			if (DryFireSound) UGameplayStatics::PlaySoundAtLocation(this, DryFireSound, Character->GetActorLocation());
+			return;
+		}
+		Reload();
 		return;
 	}
 
@@ -66,9 +77,9 @@ void AWeapon::Fire()
 	
 	if (IsPlayerOwned && FireAnimation != nullptr)
 	{
-		//if (UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
 		{
-			//AnimInstance->Montage_Play(FireAnimation, 1.f);
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
 	FTimerHandle TimerHandle;
@@ -108,10 +119,17 @@ void AWeapon::Reload()
 	if (CurrentMagAmmo == MaxMagSize || CurrentReserveAmmo <= 0) return;
 	if (ReloadAnimation != nullptr)
 	{
-		//if (UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
 		{
-			//AnimInstance->Montage_Play(ReloadAnimation, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+			AnimInstance->Montage_Play(ReloadAnimation, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
 		}
+	}
+	if (ReloadSounds.Num() > 0)
+	{
+		int32 RandomSoundIndex = FMath::RandRange(0, ReloadSounds.Num() - 1);
+		USoundBase* FireSound = ReloadSounds[RandomSoundIndex];
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+		
 	}
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeapon::ReloadMag, (ReloadAnimation) ? ReloadAnimation->GetPlayLength() : 1.0f, false);
 }
@@ -130,7 +148,19 @@ void AWeapon::ReloadMag()
 
 void AWeapon::Melee()
 {
-	
+	if (MeleeSounds.Num() > 0)
+	{
+		int32 RandomSoundIndex = FMath::RandRange(0, MeleeSounds.Num() - 1);
+		USoundBase* FireSound = MeleeSounds[RandomSoundIndex];
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+		
+	}
+	if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+	{
+		if (FPMeleeAnimations.Num() <= 0) return;
+		UAnimMontage* RandomMeleeAnim = FPMeleeAnimations[FMath::RandRange(0, FPMeleeAnimations.Num() - 1)];
+		AnimInstance->Montage_Play(RandomMeleeAnim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+	}
 }
 
 void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
@@ -157,8 +187,9 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	}
 	else
 	{
-		AttachToComponent(Character->GetMesh2P(), AttachmentRules, FName(TEXT("hand_rSocket")));
+		AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
 	}
+	Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())->HasRifle = true;
 }
 
 void AWeapon::DropWeapon()

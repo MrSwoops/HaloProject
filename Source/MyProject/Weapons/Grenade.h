@@ -8,6 +8,7 @@
 #include "../Interfaces/DamageDealer.h"
 #include "Grenade.generated.h"
 
+class UExplosiveComponent;
 class UMyProjectPickUpComponent;
 class USphereComponent;
 class UProjectileMovementComponent;
@@ -26,7 +27,9 @@ public:
 	/** Sphere collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	USphereComponent* CollisionComp;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UExplosiveComponent* ExplosiveComp;
 
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
@@ -38,8 +41,7 @@ public:
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-	UFUNCTION()
-	void OnExplode(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp);
+	
 
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -55,8 +57,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	TArray<USoundBase*> ExplosionSounds;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	TArray<USoundBase*> ScavageSounds;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
@@ -64,17 +65,11 @@ protected:
 	
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	float FuseTime = 2.5f;
 	float Timer = 0.0f;
 
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-
-	UPROPERTY(EditDefaultsOnly)
-	float ExplosionRadius = 175.0f;
-	
-
 public:	
+	UPROPERTY(EditDefaultsOnly)
+	float FuseTime = 2.5f;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

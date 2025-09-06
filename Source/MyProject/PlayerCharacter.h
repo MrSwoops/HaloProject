@@ -25,6 +25,10 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Die() override;
+
+	virtual void SetRagdoll(bool Active) override;
+
 #pragma region UIUpdates
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")

@@ -32,7 +32,7 @@ APlayerCharacter::APlayerCharacter()
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("3PCamArm"));
-	SpringArmComp->SetupAttachment(CharacterMesh);
+	SpringArmComp->SetupAttachment(GetMesh());
 	SpringArmComp->bUsePawnControlRotation = true;
 	
 	ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
@@ -43,6 +43,7 @@ APlayerCharacter::APlayerCharacter()
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
+	FirstPersonMesh->SetCollisionProfileName("NoCollision");
 	FirstPersonMesh->SetOnlyOwnerSee(true);
 	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
 	FirstPersonMesh->bCastDynamicShadow = false;
@@ -57,10 +58,16 @@ void APlayerCharacter::BeginPlay()
 	UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
 }
 
+void APlayerCharacter::Die()
+{
+	SetCameraPersp(false);
+	Super::Die();
+}
+
+
 void APlayerCharacter::TakeDamage(const int32& Damage)
 {
 	Super::TakeDamage(Damage);
-
 	OnReceiveDamage.Broadcast(Health, MaxHealth, Damage);
 }
 
@@ -88,6 +95,28 @@ void APlayerCharacter::RemoveInteractable(UCharacterInteractableComponent* Inter
 	}
 }
 
+void APlayerCharacter::SetRagdoll(bool Active)
+{
+	if (Active)
+	{
+		FVector Velocity = GetVelocity();
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
+		FirstPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+		FirstPersonMesh->SetSimulatePhysics(true);
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	}
+	else
+	{
+		GetMesh()->SetSimulatePhysics(false);
+		GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+		FirstPersonMesh->SetSimulatePhysics(false);
+		FirstPersonMesh->SetCollisionProfileName(TEXT("NoCollision"));
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
+	}
+}
+
 void APlayerCharacter::SwapCam()
 {
 	SetCameraPersp(!FirstPersonCameraComponent->IsActive());
@@ -97,7 +126,7 @@ void APlayerCharacter::SetCameraPersp(const bool& FirstPerson)
 {
 	if (FirstPerson)
 	{
-		CharacterMesh->SetOwnerNoSee(true);
+		GetMesh()->SetOwnerNoSee(true);
 		FirstPersonMesh->SetOwnerNoSee(false);
 		FirstPersonCameraComponent->SetActive(true);
 		ThirdPersonCameraComponent->SetActive(false);
@@ -105,7 +134,7 @@ void APlayerCharacter::SetCameraPersp(const bool& FirstPerson)
 	}
 	else
 	{
-		CharacterMesh->SetOwnerNoSee(false);
+		GetMesh()->SetOwnerNoSee(false);
 		FirstPersonMesh->SetOwnerNoSee(true);
 		ThirdPersonCameraComponent->SetActive(true);
 		FirstPersonCameraComponent->SetActive(false);

@@ -32,6 +32,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UActorPool* GrenadePool;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UActorPool* RocketPool;
+
 	AActor* SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType);
 
 	AGrenade* SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType);

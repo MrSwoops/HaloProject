@@ -33,14 +33,17 @@ AGameplayCharacter::AGameplayCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+	GetCapsuleComponent()->SetCollisionProfileName("CharacterWorldInteraction");
 
 	WeaponInventory = CreateDefaultSubobject<UWeaponInventory>(TEXT("WeaponInventory"));
 
-	CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh2P"));
-	CharacterMesh->SetupAttachment(GetCapsuleComponent());
-	CharacterMesh->SetOwnerNoSee(true);
-	CharacterMesh->SetRelativeLocation(FVector(0.f, 0.f, -94.f));
-	CharacterMesh->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+	//CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh2P"));
+	GetMesh()->SetCollisionProfileName("NoCollision");
+	GetMesh()->SetupAttachment(GetCapsuleComponent());
+	GetMesh()->SetOwnerNoSee(true);
+	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -94.f));
+	GetMesh()->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+	GetMesh()->SetNotifyRigidBodyCollision(true);
 	
 }
 
@@ -50,21 +53,31 @@ void AGameplayCharacter::BeginPlay()
 	Health = MaxHealth;
 }
 
-//////////////////////////////////////////////////////////////////////////// Input
+
+
 
 void AGameplayCharacter::SetRagdoll(bool Active)
 {
 	if (Active)
 	{
-		CharacterMesh->SetCollisionProfileName(TEXT("Ragdoll"));
-		CharacterMesh->SetSimulatePhysics(true);
+		FVector Velocity = GetVelocity();
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 	else
 	{
-		CharacterMesh->SetSimulatePhysics(false);
-		CharacterMesh->SetCollisionProfileName(TEXT("NoCollision"));
-		
+		GetMesh()->SetSimulatePhysics(false);
+		GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
 	}
+}
+
+void AGameplayCharacter::Die()
+{
+	IsDead = true;
+	SetRagdoll(true);
 }
 
 
@@ -75,7 +88,7 @@ void AGameplayCharacter::TakeDamage(IDamageDealer* dd)
 void AGameplayCharacter::TakeDamage(const int32& Damage)
 {
 	Health -= Damage;
-	if (Health <= 0) Health = 0;
+	if (!IsDead && Health <= 0) Die();
 }
 
 void AGameplayCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)
