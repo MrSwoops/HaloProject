@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MyProjectGameMode.h"
-#include "MyProjectCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AMyProjectGameMode::AMyProjectGameMode()

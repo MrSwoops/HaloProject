@@ -30,7 +30,7 @@ protected:
 	float ExplosionRadius = 175.0f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float BaseExplosionForce = 175.0f;
+	float BaseExplosionForce = 15000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TEnumAsByte<EObjectTypeQuery>> ExplodableObjectTypes;

@@ -3,8 +3,8 @@
 
 #include "PlayerCharacter.h"
 
-#include "BulletPoolManager.h"
 #include "CharacterInteractableComponent.h"
+#include "EnergyShield.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -13,14 +13,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "WeaponInventory.h"
 #include "Engine/LocalPlayer.h"
-#include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
-#include "CustomGameMode.h"
 #include "Weapons/Grenade.h"
-#include "WeaponUIWidget.h"
-#include "Weapons/Weapon.h"
-#include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -39,7 +33,9 @@ APlayerCharacter::APlayerCharacter()
 	ThirdPersonCameraComponent->SetupAttachment(SpringArmComp);
 	ThirdPersonCameraComponent->SetAutoActivate(false);
 	//ThirdPersonCameraComponent->;
-	
+
+	EnergyShield = CreateDefaultSubobject<UEnergyShield>(TEXT("Energy Shield"));
+	EnergyShield->Player = this;
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -68,7 +64,7 @@ void APlayerCharacter::Die()
 void APlayerCharacter::TakeDamage(const int32& Damage)
 {
 	Super::TakeDamage(Damage);
-	OnReceiveDamage.Broadcast(Health, MaxHealth, Damage);
+	OnReceiveDamage.Broadcast(EnergyShield->CurrentEnergy, EnergyShield->MaxEnergy, Damage);
 }
 
 void APlayerCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)
@@ -150,7 +146,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerCharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
-
+		
+		// Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &APlayerCharacter::Crouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &APlayerCharacter::UnCrouch);
+		
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 
@@ -190,12 +190,13 @@ void APlayerCharacter::NotifyControllerChanged()
 
 void APlayerCharacter::ThrowGrenade()
 {
-	
 	const FRotator SpawnRotation = Cast<APlayerController>(GetController())->PlayerCameraManager->GetCameraRotation();
 	const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(FVector(100.0f, 0.0f, 10.0f));
 	AGrenade* OutNade = nullptr;
 	if (WeaponInventory->TryGetGrenade(SpawnLocation, SpawnRotation, OutNade))
 	{
+		OutNade->Throw();
+		OutNade->Arm(OutNade->FuseTime);
 		UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
 	}
 }

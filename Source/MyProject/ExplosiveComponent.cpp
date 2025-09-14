@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapons/Grenade.h"
+#include "Weapons/Weapon.h"
 
 // Sets default values for this component's properties
 UExplosiveComponent::UExplosiveComponent()
@@ -72,11 +73,19 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 		FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
 		Velocity.Z += 0.5f;
 		Velocity.Normalize();
-		Character->GetCharacterMovement()->Launch(Velocity * 1500.0f * DistanceRatio);
+		Character->GetCharacterMovement()->Launch(Velocity * (BaseExplosionForce / 10.0f) * DistanceRatio);
 	}
 	else if (AGrenade* Grenade = Cast<AGrenade>(OtherActor))
 	{
 		Grenade->Arm(Grenade->FuseTime / 2);
+	}
+	else if (AWeapon* Weapon = Cast<AWeapon>(OtherActor))
+	{
+		if (!Weapon->Owner)
+		{
+			Weapon->SkeletalMeshComp->SetEnableGravity(true);
+			Weapon->SkeletalMeshComp->SetSimulatePhysics(true);
+		}
 	}
 	
 	if (OtherComp->IsSimulatingPhysics())
@@ -84,6 +93,6 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 		FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
 		Velocity.Z += 0.5f;
 		Velocity.Normalize();
-		OtherComp->AddImpulseAtLocation(Velocity * 75000.0f * DistanceRatio, ExplosionLocation);
+		OtherComp->AddImpulseAtLocation(Velocity * BaseExplosionForce * DistanceRatio, ExplosionLocation);
 	} 
 }

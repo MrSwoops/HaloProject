@@ -75,6 +75,8 @@ public:
 
 	void Arm(const float& ArmTime);
 
+	void Throw();
+
 	void Explode();
 
 };

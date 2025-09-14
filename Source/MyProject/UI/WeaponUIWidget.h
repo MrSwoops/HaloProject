@@ -38,14 +38,20 @@ public:
 	{
 		ReserveAmmo->SetText(FText::FromString(FString::FromInt(Ammo)));
 	}
+	void SetReserveText(const float& Ammo)
+	{
+		ReserveAmmo->SetText(FText::FromString(FString::FromInt(FMath::CeilToInt(Ammo))));
+	}
 
 	UFUNCTION()
-	void SetMagAmmo(const int32& MagSize);
+	virtual void SetMagAmmo(const int32& MagSize);
 
 	UFUNCTION()
-	void UpdateAmmoUI(const int32& CurrentMagAmmo);
-
-	void InitializeWeaponUI(const int32& CurrentMagAmmo, const int32& MaxMagSize, const int32& CurrentReserveAmmo);
+	virtual void UpdateAmmoUI(const int32& CurrentMagAmmo);
+	virtual void InitializeWeaponUI(const int32& CurrentMagAmmo, const int32& MaxMagSize, const int32& CurrentReserveAmmo);
+	
+	virtual void UpdateAmmoUI(const float& CurrentMagAmmo) {}
+	virtual void InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo){}
 
 protected:
 	UPROPERTY(BlueprintReadWrite)

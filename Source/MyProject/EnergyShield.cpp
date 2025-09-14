@@ -1,0 +1,87 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "EnergyShield.h"
+
+#include "PlayerCharacter.h"
+#include "Components/AudioComponent.h"
+
+// Sets default values for this component's properties
+UEnergyShield::UEnergyShield()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+	
+	RegenAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("RegenAudioComponent"));
+	RegenAudioComponent->bAutoActivate = false; // don't auto-play
+	RegenAudioComponent->bIsUISound = false;    // optional, if it's 3D/2D
+	if (AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner()))
+	{
+		Owner->EnergyShield = this;
+	}
+}
+
+
+// Called when the game starts
+void UEnergyShield::BeginPlay()
+{
+	Super::BeginPlay();
+	if (Player)
+	{
+		RegenAudioComponent = NewObject<UAudioComponent>(Player, UAudioComponent::StaticClass());
+		RegenAudioComponent->SetupAttachment(Player->GetRootComponent());
+		RegenAudioComponent->SetSound(RegenSound);
+	}
+	CurrentEnergy = MaxEnergy;
+}
+
+
+// Called every frame
+void UEnergyShield::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	CurrentEnergy += RegenSpeed * DeltaTime;
+	if (Player) Player->OnReceiveDamage.Broadcast(CurrentEnergy, MaxEnergy, 0);
+	if (CurrentEnergy >= MaxEnergy)
+	{
+		CurrentEnergy = MaxEnergy;
+		StopEnergyRegen();
+	}
+}
+
+void UEnergyShield::StartEnergyRegen()
+{
+	SetComponentTickEnabled(true);
+	if (RegenAudioComponent) RegenAudioComponent->Play();
+}
+
+void UEnergyShield::StopEnergyRegen()
+{
+	SetComponentTickEnabled(false);
+	if (RegenAudioComponent) RegenAudioComponent->Stop();
+}
+
+void UEnergyShield::ResetRegenDelay()
+{
+	StopEnergyRegen();
+	GetWorld()->GetTimerManager().SetTimer(RegenDelayTimerHandle, this, &UEnergyShield::StartEnergyRegen, RegenDelay, false);
+}
+
+int32 UEnergyShield::TakeDamage(const int32& IncomingDamage)
+{
+	if (IncomingDamage <= 0) return 0;
+	ResetRegenDelay();
+	int32 RemainingDamage = 0;
+	
+	if (IncomingDamage > CurrentEnergy)
+	{
+		RemainingDamage = IncomingDamage - CurrentEnergy;
+		CurrentEnergy = 0;
+	}
+	else
+	{
+		CurrentEnergy -= IncomingDamage;
+	}
+	return RemainingDamage;
+}
+

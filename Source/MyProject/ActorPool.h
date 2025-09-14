@@ -32,10 +32,10 @@ public:
 	TArray<APooledActor*> pool;
 
 	//UFUNCTION(BlueprintCallable)
-	AActor* SpawnFromTransform(FTransform transform);
+	AActor* SpawnFromTransform(FTransform transform, bool AutoActivate = true);
 
 	//UFUNCTION(BlueprintCallable)
-	AActor* SpawnFromLocationAndRotation(FVector location, FRotator rotation);
+	AActor* SpawnFromLocationAndRotation(FVector location, FRotator rotation, bool AutoActivate = true);
 
 private:
 	void InitializePool();

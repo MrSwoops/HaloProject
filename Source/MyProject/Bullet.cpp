@@ -7,6 +7,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/IDamageable.h"
+#include "Weapons/BulletData.h"
 
 ABullet::ABullet() 
 {
@@ -33,17 +34,6 @@ void ABullet::BeginPlay()
 
 void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	
-	if (GEngine)
-	{
-		FString T = Hit.GetActor()->GetName() + ": " + Hit.GetComponent()->GetName() +  "Hit. Bone Hit: " + Hit.BoneName.ToString();
-		GEngine->AddOnScreenDebugMessage(
-			-1,                  // Key: Unique ID for the message (-1 for a new message)
-			5.0f,                // TimeToDisplay: Duration in seconds to display the message
-			FColor::Yellow,      // DisplayColor: Color of the text
-			T // DebugMessage: The string to display
-		);
-	}
 	ReturnToPool();
 	if (OtherComp && OtherActor)
 	{
@@ -54,39 +44,12 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 				switch (HurtBox->HurtboxType)
 				{
 				case Head:
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(
-							-1,                  // Key: Unique ID for the message (-1 for a new message)
-							5.0f,                // TimeToDisplay: Duration in seconds to display the message
-							FColor::Yellow,      // DisplayColor: Color of the text
-							TEXT("Head") // DebugMessage: The string to display
-						);
-					}
 					Damageable->TakeDamage(Damage * 2);
 					break;
 				case Limb:
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(
-							-1,                  // Key: Unique ID for the message (-1 for a new message)
-							5.0f,                // TimeToDisplay: Duration in seconds to display the message
-							FColor::Yellow,      // DisplayColor: Color of the text
-							TEXT("Limb") // DebugMessage: The string to display
-						);
-					}
 					Damageable->TakeDamage(this);
 					break;
 				case Torso:
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(
-							-1,                  // Key: Unique ID for the message (-1 for a new message)
-							5.0f,                // TimeToDisplay: Duration in seconds to display the message
-							FColor::Yellow,      // DisplayColor: Color of the text
-							TEXT("Torso") // DebugMessage: The string to display
-						);
-					}
 					Damageable->TakeDamage(this);
 					break;
 				default:
@@ -96,15 +59,6 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 			}
 			else
 			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(
-						-1,                  // Key: Unique ID for the message (-1 for a new message)
-						5.0f,                // TimeToDisplay: Duration in seconds to display the message
-						FColor::Yellow,      // DisplayColor: Color of the text
-						TEXT("No Hurtbox") // DebugMessage: The string to display
-					);
-				}
 				Damageable->TakeDamage(this);
 			}
 		}
@@ -143,6 +97,12 @@ const float& ABullet::GetDamage()
 	return Damage;
 }
 
+void ABullet::LoadBulletData(FBulletData BulletData = BulletData::Default)
+{
+	Damage = BulletData.Damage;
+	Movement->InitialSpeed = BulletData.Speed;
+	Movement->MaxSpeed = BulletData.Speed;
+}
 
 
 // Called every frame

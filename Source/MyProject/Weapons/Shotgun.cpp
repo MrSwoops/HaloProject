@@ -6,7 +6,7 @@
 #include "../CustomGameMode.h"
 #include "../BulletPoolManager.h"
 #include "TimerManager.h"
-#include "../WeaponUIWidget.h"
+#include "../UI/WeaponUIWidget.h"
 #include "Engine/World.h"
 
 // void AShotgun::Fire()
@@ -47,7 +47,7 @@ void AShotgun::ShootBullet()
 			FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
 			FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
 			
-			GameMode->BulletPoolManager->SpawnBullet(SpawnLocation, SpreadRotation, WeaponModel);
+			GameMode->BulletPoolManager->SpawnBullet(SpawnLocation, SpreadRotation, WeaponType);
 			//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
 		}
 	}

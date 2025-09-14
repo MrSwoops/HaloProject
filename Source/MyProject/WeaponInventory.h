@@ -24,17 +24,23 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY()
 	AWeapon* CurrentWeapon = nullptr;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY()
 	AWeapon* PrimaryWeapon = nullptr;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY()
 	AWeapon* SecondaryWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AWeapon> StartingPrimary;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AWeapon> StartingSecondary;
 
 	void PickUpWeapon(AWeapon* Weapon);
 	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
 	bool ScavengeWeapon(AWeapon* Weapon);
+	bool FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int32 CurrentGrenade = 0;
@@ -52,5 +58,6 @@ public:
 	void TryReloadWeapon();
 	void SwapWeapons();
 	void SwapWeapons(UEnhancedInputComponent* EnhancedInputComponent);
-	
+
+	void DropInventory();
 };

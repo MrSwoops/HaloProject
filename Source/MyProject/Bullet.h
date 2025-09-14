@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PooledActor.h"
 #include "Interfaces/DamageDealer.h"
+#include "Weapons/BulletData.h"
 #include "Bullet.generated.h"
 
 
@@ -43,4 +44,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual const float& GetDamage() override;
+
+	UFUNCTION()
+	void LoadBulletData(FBulletData BulletData);
 };

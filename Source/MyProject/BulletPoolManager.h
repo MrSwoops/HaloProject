@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTagContainer.h"
 #include "BulletPoolManager.generated.h"
 
-
+class ABullet;
+struct FGameplayTag;
+class AWeapon;
 class AGrenade;
 enum EWeapon : int;
 class UActorPool;
@@ -35,11 +38,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UActorPool* RocketPool;
 
-	AActor* SpawnBullet(const FVector& Location, const FRotator& Rotation, const EWeapon& BulletType);
+	ABullet* SpawnBullet(const FVector& Location, const FRotator& Rotation, FGameplayTag WeaponType);
 
 	AGrenade* SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType);
 
 protected:
 
+
+	UPROPERTY()
+	TMap<FGameplayTag, UActorPool*> BulletPools;
+
+	// Optional: default pool if no tag matches
+	UPROPERTY()
+	UActorPool* DefaultPool;
 		
 };

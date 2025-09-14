@@ -7,6 +7,7 @@
 #include "Interfaces/IDamageable.h"
 #include "GameplayCharacter.generated.h"
 
+class UEnergyShield;
 class UWeaponInventory;
 class USpringArmComponent;
 class AWeapon;
@@ -40,8 +41,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetRagdoll(bool Active);
 
-	
-
 	UFUNCTION(BlueprintCallable)
 	virtual void Die();
 
@@ -50,6 +49,8 @@ public:
 #pragma region Weapons
 public:
 
+	
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWeaponInventory* WeaponInventory;
 	
@@ -62,11 +63,15 @@ public:
 
 #pragma endregion Weapons
 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UEnergyShield* EnergyShield;
+	
 	UPROPERTY(BlueprintReadOnly)
 	float Health = 0;
 	
 	UPROPERTY(EditAnywhere)
-	float MaxHealth = 100;
+	float MaxHealth = 45;
 	virtual void TakeDamage(IDamageDealer*) override;
 	virtual void TakeDamage(const int32&) override;
 
@@ -75,8 +80,6 @@ public:
 
 	virtual void AddInteractable(UCharacterInteractableComponent* Interactable);
 	virtual void RemoveInteractable(UCharacterInteractableComponent* Interactable);
-
-	
 	
 protected:
 	virtual void BeginPlay() override;
@@ -85,6 +88,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	virtual void Crouch();
+	virtual void UnCrouch();
 
 	UFUNCTION()
 	virtual void TryInteract();

@@ -3,26 +3,18 @@
 
 #include "GameplayCharacter.h"
 
-#include "BulletPoolManager.h"
 #include "CharacterInteractableComponent.h"
+#include "EnergyShield.h"
 #include "Animation/AnimInstance.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
 #include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
-#include "CustomGameMode.h"
 #include "WeaponInventory.h"
 #include "Weapons/Grenade.h"
-#include "WeaponUIWidget.h"
-#include "Weapons/Weapon.h"
-#include "Blueprint/UserWidget.h"
-#include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -74,9 +66,22 @@ void AGameplayCharacter::SetRagdoll(bool Active)
 	}
 }
 
+void AGameplayCharacter::Crouch()
+{
+	ACharacter::Crouch(false);
+}
+
+void AGameplayCharacter::UnCrouch()
+{
+	ACharacter::UnCrouch(false);
+}
+
+
+
 void AGameplayCharacter::Die()
 {
 	IsDead = true;
+	WeaponInventory->DropInventory();
 	SetRagdoll(true);
 }
 
@@ -87,8 +92,11 @@ void AGameplayCharacter::TakeDamage(IDamageDealer* dd)
 }
 void AGameplayCharacter::TakeDamage(const int32& Damage)
 {
-	Health -= Damage;
-	if (!IsDead && Health <= 0) Die();
+	if (EnergyShield)
+		Health -= EnergyShield->TakeDamage(Damage);
+	else
+		Health -= Damage;
+	if (Health <= 0 && !IsDead) Die();
 }
 
 void AGameplayCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)
@@ -133,7 +141,8 @@ void AGameplayCharacter::ThrowGrenade()
 	AGrenade* OutNade = nullptr;
 	if (WeaponInventory->TryGetGrenade(SpawnLocation, SpawnRotation, OutNade))
 	{
-		
+		OutNade->Throw();
+		OutNade->Arm(OutNade->FuseTime);
 	}
 }
 void AGameplayCharacter::SwapGrenades()
@@ -153,9 +162,10 @@ void AGameplayCharacter::SwapWeapons()
 
 void AGameplayCharacter::PickUpWeapon(AWeapon* Weapon)
 {
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(GetController()->InputComponent))
+	if (GetController())
 	{
-		WeaponInventory->PickUpWeapon(EnhancedInputComponent, Weapon);
+		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(GetController()->InputComponent))
+			WeaponInventory->PickUpWeapon(EnhancedInputComponent, Weapon);
 	}
 	else
 		WeaponInventory->PickUpWeapon(Weapon);

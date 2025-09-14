@@ -4,7 +4,6 @@
 #include "CharacterInteractableComponent.h"
 
 #include "GameplayCharacter.h"
-#include "MyProjectCharacter.h"
 
 // Sets default values for this component's properties
 UCharacterInteractableComponent::UCharacterInteractableComponent()

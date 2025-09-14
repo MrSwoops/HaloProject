@@ -7,6 +7,7 @@
 #include "Weapons/Grenade.h"
 #include "Kismet/GameplayStatics.h"
 #include "BulletPoolManager.h"
+#include "MyProjectPickUpComponent.h"
 #include "PlayerCharacter.h"
 #include "Weapons/Weapon.h"
 
@@ -26,6 +27,17 @@ void UWeaponInventory::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner());
+	if (StartingSecondary)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(StartingSecondary);
+		Weapon->AttachWeapon(Owner);
+	} 
+	if (StartingPrimary)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(StartingPrimary);
+		Weapon->AttachWeapon(Owner);
+	}
 	// ...
 	
 }
@@ -38,7 +50,7 @@ void UWeaponInventory::PickUpWeapon(UEnhancedInputComponent* EnhancedInputCompon
 		{
 			//Drop current weapon and pick up new weapon
 			CurrentWeapon->UnbindActions(EnhancedInputComponent);
-			CurrentWeapon->DropWeapon();
+			AWeapon* OldWeapon = CurrentWeapon;
 			if (CurrentWeapon == PrimaryWeapon)
 			{
 				PrimaryWeapon = Weapon;
@@ -50,6 +62,7 @@ void UWeaponInventory::PickUpWeapon(UEnhancedInputComponent* EnhancedInputCompon
 				CurrentWeapon = Weapon;
 				CurrentWeapon->BindActions(EnhancedInputComponent);
 			}
+			OldWeapon->DropWeapon();
 		}
 		else // Add to secondary and swap
 		{
@@ -72,7 +85,7 @@ void UWeaponInventory::PickUpWeapon(AWeapon* Weapon)
 		if (SecondaryWeapon)
 		{
 			//Drop current weapon and pick up new weapon
-			CurrentWeapon->DropWeapon();
+			AWeapon* OldWeapon = CurrentWeapon;
 			if (CurrentWeapon == PrimaryWeapon)
 			{
 				PrimaryWeapon = Weapon;
@@ -82,6 +95,7 @@ void UWeaponInventory::PickUpWeapon(AWeapon* Weapon)
 				SecondaryWeapon = Weapon;
 				CurrentWeapon = Weapon;
 			}
+			OldWeapon->DropWeapon();
 		}
 		else // Add to secondary and swap
 		{
@@ -150,38 +164,48 @@ bool UWeaponInventory::TryGetGrenade(const FVector& SpawnLocation, const FRotato
 	default:
 		return false;
 	}
-	return true;
+	return false;
 }
 
 #pragma endregion Grenades
 
 bool UWeaponInventory::ScavengeWeapon(AWeapon* Weapon)
 {
-	int32 AmmoNeeded;
-	if (Weapon->WeaponModel == PrimaryWeapon->WeaponModel)
+	if (Weapon->IsSameWeaponType(PrimaryWeapon))
 	{
-		AmmoNeeded = PrimaryWeapon->MaxReserveMags * PrimaryWeapon->MaxMagSize - PrimaryWeapon->CurrentReserveAmmo;
-		if (Weapon->CurrentReserveAmmo < AmmoNeeded) AmmoNeeded = Weapon->CurrentReserveAmmo;
-		if (AmmoNeeded > 0)
-		{
-			PrimaryWeapon->CurrentReserveAmmo += AmmoNeeded;
-			PrimaryWeapon->UpdateReserveAmmoUI();
-		}
+		return FillWeapon(Weapon, PrimaryWeapon);
 	}
 	else
 	{
-		AmmoNeeded = SecondaryWeapon->MaxReserveMags * SecondaryWeapon->MaxMagSize - SecondaryWeapon->CurrentReserveAmmo;
-		if (Weapon->CurrentReserveAmmo < AmmoNeeded) AmmoNeeded = Weapon->CurrentReserveAmmo;
-		if (AmmoNeeded > 0)
-		{
-			SecondaryWeapon->CurrentReserveAmmo += AmmoNeeded;
-			SecondaryWeapon->UpdateReserveAmmoUI();
-		}
+		return FillWeapon(Weapon, SecondaryWeapon);
 	}
-	Weapon->CurrentReserveAmmo -= AmmoNeeded;
-	if (Weapon->CurrentReserveAmmo <= 0) return true;
-	return false;
 }
+
+bool UWeaponInventory::FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon)
+{
+	int32 AmmoNeeded = FillWeapon->MaxReserveMags * FillWeapon->MaxMagSize - FillWeapon->CurrentReserveAmmo;
+	int32 AmmoAvailable = LootedWeapon->CurrentReserveAmmo + LootedWeapon->CurrentMagAmmo;
+	
+	if (AmmoAvailable <= AmmoNeeded) // Take all ammo and delete looted gun
+	{
+		FillWeapon->CurrentReserveAmmo += AmmoAvailable;
+		FillWeapon->UpdateReserveAmmoUI();
+		return true;
+	}
+	else // Take needed ammo
+	{
+		FillWeapon->CurrentReserveAmmo += AmmoNeeded;
+		LootedWeapon->CurrentReserveAmmo -= AmmoNeeded;
+		if (LootedWeapon->CurrentReserveAmmo < 0)
+		{
+			LootedWeapon->CurrentMagAmmo += LootedWeapon->CurrentReserveAmmo;
+			LootedWeapon->CurrentReserveAmmo = 0;
+		}
+		FillWeapon->UpdateReserveAmmoUI();
+		return false;
+	}
+}
+
 
 bool UWeaponInventory::TryMeleeWeapon()
 {
@@ -240,5 +264,34 @@ void UWeaponInventory::SwapWeapons(UEnhancedInputComponent* EnhancedInputCompone
 		}
 		CurrentWeapon->EnableWeapon();
 		CurrentWeapon->BindActions(EnhancedInputComponent);
+	}
+}
+
+void UWeaponInventory::DropInventory()
+{
+	if (SecondaryWeapon)
+	{
+		SecondaryWeapon->DropWeapon();
+		SecondaryWeapon = nullptr;
+	} 
+	if (PrimaryWeapon)
+	{
+		PrimaryWeapon->DropWeapon();
+		PrimaryWeapon = nullptr;
+	}
+
+	for (int32 i = 0; i < RegularGrenades; i++)
+	{
+		const FRotator SpawnRotation = GetOwner()->GetActorRotation();
+		const FVector SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(FVector(100.0f, 0.0f, 10.0f));
+		AGrenade* OutNade = nullptr;
+		if (TryGetGrenade(SpawnLocation, SpawnRotation, OutNade))
+		{
+			OutNade->PickUpComponent->Enabled = true;
+		}
+	}
+	for (int32 i = 0; i < PlasmaGrenades; i++)
+	{
+		
 	}
 }

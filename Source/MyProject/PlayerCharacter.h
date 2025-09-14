@@ -6,8 +6,7 @@
 #include "GameplayCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTakeDamage, const float&, CurrentHealth, const float&, MaxHealth, const int32&, Damagetaken);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTakeDamage, const float&, CurrentShields, const float&, MaxShields, const int32&, Damagetaken);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateInteractions, bool, Active, const FString&, Text);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUpdateGrenadesUI, const int32&, CurrentGrenadeSelection, const int32&, RegularGrenadesCount, const int32&, PlasmaGrenadesCount);
 
@@ -69,7 +68,8 @@ public:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
@@ -92,10 +92,10 @@ public:
 	UInputAction* ThrowGrenadeAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* ReloadAction;
+	UInputAction* ReloadAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* MeleeAction;
+	UInputAction* MeleeAction;
 
 protected:
 	virtual void NotifyControllerChanged() override;

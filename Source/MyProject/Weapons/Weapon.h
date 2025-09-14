@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
@@ -12,20 +13,18 @@ class AMyProjectCharacter;
 class ACustomGameMode;
 class UMyProjectPickUpComponent;
 class UWeaponUIWidget;
+struct FGameplayTag;
 
-UENUM(BlueprintType, meta = (Bitflags = "true"))
-enum EWeapon : int
+namespace WeaponTags
 {
-	TestWeapon,
-	M90,
-	M6CSOC,
-	MA5C,
-	BR55,
-	M99,
-	M9,
-	RocketLauncher,
-	
-};
+	static const FGameplayTag M90    = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.M90"));
+	static const FGameplayTag M99    = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.M99"));
+	static const FGameplayTag M9     = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.M9"));
+	static const FGameplayTag SP4NKR = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.SP4NKR"));
+	static const FGameplayTag BR55 = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.BR55"));
+	static const FGameplayTag SRS = FGameplayTag::RequestGameplayTag(FName("Weapon.UNSC.SRS_99D"));
+	static const FGameplayTag PlasPistol = FGameplayTag::RequestGameplayTag(FName("Weapon.Cov.PlasmaPistol"));
+}
 
 UCLASS()
 class MYPROJECT_API AWeapon : public AActor
@@ -38,8 +37,9 @@ public:
 	void DisableWeapon();
 	void EnableWeapon();
 
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	TEnumAsByte<EWeapon> WeaponModel;
+	FGameplayTag WeaponType;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	ACustomGameMode* GameMode;
@@ -55,7 +55,7 @@ public:
 	FVector MuzzleOffset;
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void AttachWeapon(AGameplayCharacter* TargetCharacter);
+	virtual void AttachWeapon(AGameplayCharacter* TargetCharacter);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
 	TArray<USoundBase*> FireSounds;
@@ -73,6 +73,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void FireHeld() {}
 
+	UFUNCTION()
+	virtual void ShootBullet();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	UAnimMontage* ReloadAnimation;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -82,13 +85,21 @@ public:
 protected:
 	UFUNCTION()
 	virtual void ReloadMag();
+
+	//FGameplayTagContainer ReloadTags;
 	
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	UFUNCTION(BlueprintCallable)
+	bool IsSameWeaponType(AWeapon* OtherWeapon);
+	bool IsSameWeaponType(FGameplayTag TagToCheck);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Animations)
 	TArray<UAnimMontage*> FPMeleeAnimations;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
 	TArray<USoundBase*> MeleeSounds;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MeleeLungeDistance;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
@@ -121,10 +132,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	virtual void ShootBullet();
-
 public:
 	UPROPERTY()
 	AGameplayCharacter* Character;

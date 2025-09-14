@@ -14,7 +14,7 @@
 #include "../CustomGameMode.h"
 #include "EnhancedInputComponent.h"
 #include "../FirstPersonAnimInstance.h"
-#include "../WeaponUIWidget.h"
+#include "../UI/WeaponUIWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
 #include "MyProject/CharacterAnimInstance.h"
@@ -44,8 +44,7 @@ void AWeapon::BeginPlay()
 	CurrentMagAmmo = MaxMagSize;
 	PickUpComp->OnPickUp.AddDynamic(this, &AWeapon::AttachWeapon);
 	CurrentReserveAmmo = (MaxReserveMags - 1) * MaxMagSize;
-	SkeletalMeshComp->SetSimulatePhysics(true);
-	SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
+	//SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 }
 
 
@@ -109,7 +108,7 @@ void AWeapon::ShootBullet()
 		FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
 		FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
 		
-		GameMode->BulletPoolManager->SpawnBullet(SpawnLocation, SpreadRotation, WeaponModel);
+		GameMode->BulletPoolManager->SpawnBullet(SpawnLocation, SpreadRotation, WeaponType);
 		//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
 	}
 }
@@ -168,12 +167,14 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	if (!TargetCharacter) return;
 	Character = TargetCharacter;
 
+	SkeletalMeshComp->SetEnableGravity(false);
 	SkeletalMeshComp->SetSimulatePhysics(false);
 	SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	Character->PickUpWeapon(this);
 	
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;//(, true);
+	AttachmentRules.bWeldSimulatedBodies = true;
 	if (APlayerCharacter* PC = Cast<APlayerCharacter>(TargetCharacter))
 	{
 		IsPlayerOwned = true;
@@ -195,12 +196,26 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 void AWeapon::DropWeapon()
 {
 	if (WeaponUI) WeaponUI->RemoveFromParent();
-	IsPlayerOwned = false;
+	if (IsPlayerOwned)
+	{
+		if (auto* IC = Cast<UEnhancedInputComponent>(Character->GetController()))
+		UnbindActions(IC);
+		IsPlayerOwned = false;
+	}
+	
 	Character = nullptr;
 	GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	SkeletalMeshComp->SetSimulatePhysics(true);
-	SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
-	PickUpComp->SetCollisionProfileName(FName("Interaction"));
+	if (CurrentReserveAmmo <= 0 && CurrentMagAmmo <= 0)
+	{
+		this->Destroy();
+	}
+	else
+	{
+		SkeletalMeshComp->SetSimulatePhysics(true);
+		SkeletalMeshComp->SetEnableGravity(true);
+		SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
+		PickUpComp->SetCollisionProfileName(FName("Interaction"));
+	}
 }
 
 void AWeapon::BindActions(UEnhancedInputComponent* InpComp)
@@ -239,3 +254,15 @@ void AWeapon::UpdateReserveAmmoUI()
 	}
 }
 
+bool AWeapon::IsSameWeaponType(AWeapon* OtherWeapon)
+{
+	if (OtherWeapon == nullptr)
+		return false;
+
+	return IsSameWeaponType(OtherWeapon->WeaponType);
+}
+
+bool AWeapon::IsSameWeaponType(FGameplayTag TagToCheck)
+{
+	return TagToCheck == WeaponType;
+}

@@ -7,9 +7,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "../GameplayCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "MyProject/ExplosiveComponent.h"
 
 // Sets default values
@@ -33,6 +31,7 @@ AGrenade::AGrenade()
 	ProjectileMovement->InitialSpeed = 3000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
+	ProjectileMovement->SetActive(false);
 
 	ExplosiveComp = CreateDefaultSubobject<UExplosiveComponent>(TEXT("Explosive"));
 }
@@ -63,17 +62,27 @@ void AGrenade::SetActive(bool i)
 {
 	if (i)
 	{
-		Arm(FuseTime);
-		ProjectileMovement->Activate(true);
 		ProjectileMovement->SetUpdatedComponent(RootComponent);
-		ProjectileMovement->SetVelocityInLocalSpace(FVector().ForwardVector * ProjectileMovement->InitialSpeed);
-		UGameplayStatics::PlaySoundAtLocation(this, ThrowSound, GetActorLocation());
 	} else
 	{
 		Armed = false;
+		PickUpComponent->SetActive(i);
 	}
+	ProjectileMovement->Activate(i);
+	
 	Super::SetActive(i);
 }
+
+void AGrenade::Throw()
+{
+	PickUpComponent->Enabled = false;
+	PickUpComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickUpComponent->SetActive(false);
+	SetActive(true);
+	ProjectileMovement->SetVelocityInLocalSpace(FVector().ForwardVector * ProjectileMovement->InitialSpeed);
+	UGameplayStatics::PlaySoundAtLocation(this, ThrowSound, GetActorLocation());
+}
+
 
 void AGrenade::Arm(const float& ArmTime)
 {
