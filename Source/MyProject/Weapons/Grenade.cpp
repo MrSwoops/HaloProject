@@ -3,12 +3,12 @@
 
 #include "Grenade.h"
 
-#include "../MyProjectPickUpComponent.h"
+#include "../Components/MyProjectPickUpComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "MyProject/ExplosiveComponent.h"
+#include "MyProject/Components/ExplosiveComponent.h"
 
 // Sets default values
 AGrenade::AGrenade()

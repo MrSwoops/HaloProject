@@ -3,15 +3,15 @@
 
 #include "PlayerCharacter.h"
 
-#include "CharacterInteractableComponent.h"
-#include "EnergyShield.h"
+#include "Components/CharacterInteractableComponent.h"
+#include "Components/EnergyShield.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "WeaponInventory.h"
+#include "Components/WeaponInventory.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "Weapons/Grenade.h"
@@ -45,6 +45,8 @@ APlayerCharacter::APlayerCharacter()
 	FirstPersonMesh->bCastDynamicShadow = false;
 	FirstPersonMesh->CastShadow = false;
 	FirstPersonMesh->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+
+	Tags.Add("Player");
 }
 
 void APlayerCharacter::BeginPlay()
@@ -53,6 +55,13 @@ void APlayerCharacter::BeginPlay()
 
 	UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
 }
+
+void APlayerCharacter::Respawn(const FVector& Location, const FRotator& Rotation)
+{
+	Super::Respawn(Location, Rotation);
+	SetCameraPersp(true);
+}
+
 
 void APlayerCharacter::Die()
 {
@@ -93,24 +102,25 @@ void APlayerCharacter::RemoveInteractable(UCharacterInteractableComponent* Inter
 
 void APlayerCharacter::SetRagdoll(bool Active)
 {
-	if (Active)
-	{
-		FVector Velocity = GetVelocity();
-		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
-		FirstPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
-		FirstPersonMesh->SetSimulatePhysics(true);
-		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-	}
-	else
-	{
-		GetMesh()->SetSimulatePhysics(false);
-		GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-		FirstPersonMesh->SetSimulatePhysics(false);
-		FirstPersonMesh->SetCollisionProfileName(TEXT("NoCollision"));
-		GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
-	}
+	Super::SetRagdoll(Active);
+	// if (Active)
+	// {
+	// 	FVector Velocity = GetVelocity();
+	// 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	// 	GetMesh()->SetSimulatePhysics(true);
+	// 	GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
+	// 	//FirstPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+	// 	//FirstPersonMesh->SetSimulatePhysics(true);
+	// 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	// }
+	// else
+	// {
+	// 	GetMesh()->SetSimulatePhysics(false);
+	// 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+	// 	//FirstPersonMesh->SetSimulatePhysics(false);
+	// 	//FirstPersonMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	// 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
+	// }
 }
 
 void APlayerCharacter::SwapCam()

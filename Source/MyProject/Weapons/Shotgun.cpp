@@ -3,11 +3,11 @@
 
 #include "Shotgun.h"
 #include "../GameplayCharacter.h"
-#include "../CustomGameMode.h"
-#include "../BulletPoolManager.h"
+#include "../Components/BulletPoolManager.h"
 #include "TimerManager.h"
 #include "../UI/WeaponUIWidget.h"
 #include "Engine/World.h"
+#include "MyProject/GameModes/BaseGameMode.h"
 
 // void AShotgun::Fire()
 // {

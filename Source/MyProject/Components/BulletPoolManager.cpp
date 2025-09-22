@@ -4,10 +4,10 @@
 #include "BulletPoolManager.h"
 
 #include "ActorPool.h"
-#include "Bullet.h"
-#include "Weapons/BulletData.h"
-#include "Weapons/Weapon.h"
-#include "Weapons/Grenade.h"
+#include "../Bullet.h"
+#include "../Weapons/BulletData.h"
+#include "../Weapons/Weapon.h"
+#include "../Weapons/Grenade.h"
 
 // Sets default values for this component's properties
 UBulletPoolManager::UBulletPoolManager()

@@ -3,13 +3,13 @@
 
 #include "WeaponInventory.h"
 
-#include "CustomGameMode.h"
-#include "Weapons/Grenade.h"
+#include "../GameModes/BaseGameMode.h"
+#include "../Weapons/Grenade.h"
 #include "Kismet/GameplayStatics.h"
 #include "BulletPoolManager.h"
 #include "MyProjectPickUpComponent.h"
-#include "PlayerCharacter.h"
-#include "Weapons/Weapon.h"
+#include "../PlayerCharacter.h"
+#include "../Weapons/Weapon.h"
 
 // Sets default values for this component's properties
 UWeaponInventory::UWeaponInventory()
@@ -26,7 +26,13 @@ UWeaponInventory::UWeaponInventory()
 void UWeaponInventory::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	InitializeInventory();
+	
+}
 
+void UWeaponInventory::InitializeInventory()
+{
 	AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner());
 	if (StartingSecondary)
 	{
@@ -38,9 +44,14 @@ void UWeaponInventory::BeginPlay()
 		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(StartingPrimary);
 		Weapon->AttachWeapon(Owner);
 	}
-	// ...
+}
+
+
+void UWeaponInventory::PickUpEquipment(AEquipment* Equipment)
+{
 	
 }
+
 
 void UWeaponInventory::PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon)
 {
@@ -145,7 +156,7 @@ bool UWeaponInventory::TryGetGrenade(const FVector& SpawnLocation, const FRotato
 	switch (CurrentGrenade) {
 	case 0: // Regular
 		if (RegularGrenades == 0) return false;
-		OutGrenade = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager->SpawnGrenade(SpawnLocation, SpawnRotation, CurrentGrenade);
+		OutGrenade = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager->SpawnGrenade(SpawnLocation, SpawnRotation, CurrentGrenade);
 		if (OutGrenade)
 		{
 			RegularGrenades--;
@@ -154,7 +165,7 @@ bool UWeaponInventory::TryGetGrenade(const FVector& SpawnLocation, const FRotato
 		break;
 	case 1: // Plasma
 		if (PlasmaGrenades == 0) return false;
-		OutGrenade = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager->SpawnGrenade(SpawnLocation, SpawnRotation, CurrentGrenade);
+		OutGrenade = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager->SpawnGrenade(SpawnLocation, SpawnRotation, CurrentGrenade);
 		if (OutGrenade)
 		{
 			PlasmaGrenades--;

@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "IDamageable.generated.h"
 
+enum EHurtboxType : int;
+struct FBulletData;
 class IDamageDealer;
 
 // This class does not need to be modified.
@@ -27,5 +29,5 @@ public:
 	float Health = 0;
 	virtual void TakeDamage(IDamageDealer*) = 0;
 	virtual void TakeDamage(const int32&) = 0;
-	
+	virtual void TakeBulletDamage(const FBulletData&, const EHurtboxType&) = 0;
 };

@@ -9,7 +9,7 @@
 UENUM(BlueprintType, meta = (Bitflags = "true"))
 enum EHurtboxType : int
 {
-	Default,
+	UndefinedHurtbox,
 	Head,
 	Torso,
 	Limb

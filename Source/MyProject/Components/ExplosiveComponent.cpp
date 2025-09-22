@@ -3,11 +3,11 @@
 
 #include "ExplosiveComponent.h"
 
-#include "GameplayCharacter.h"
+#include "../GameplayCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Weapons/Grenade.h"
-#include "Weapons/Weapon.h"
+#include "../Weapons/Grenade.h"
+#include "../Weapons/Weapon.h"
 
 // Sets default values for this component's properties
 UExplosiveComponent::UExplosiveComponent()
@@ -77,7 +77,7 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 	}
 	else if (AGrenade* Grenade = Cast<AGrenade>(OtherActor))
 	{
-		Grenade->Arm(Grenade->FuseTime / 2);
+		Grenade->Arm(0.2f);
 	}
 	else if (AWeapon* Weapon = Cast<AWeapon>(OtherActor))
 	{
@@ -88,7 +88,7 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 		}
 	}
 	
-	if (OtherComp->IsSimulatingPhysics())
+	if (OtherComp && OtherComp->IsSimulatingPhysics())
 	{
 		FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
 		Velocity.Z += 0.5f;

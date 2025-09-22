@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class ABaseGameMode;
 class AGameplayCharacter;
 struct FEnhancedInputActionEventBinding;
 class AMyProjectCharacter;
@@ -42,7 +43,7 @@ public:
 	FGameplayTag WeaponType;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	ACustomGameMode* GameMode;
+	ABaseGameMode* GameMode;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* SkeletalMeshComp;
@@ -100,6 +101,8 @@ public:
 	TArray<USoundBase*> MeleeSounds;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MeleeLungeDistance;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MeleeDamage = 70.0f;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
@@ -118,6 +121,8 @@ public:
 
 	int32 CurrentMagAmmo;
 	int32 CurrentReserveAmmo;
+
+	virtual float GetCurrentMagPercent() {return static_cast<float>(CurrentMagAmmo) / static_cast<float>(MaxMagSize);}
 
 	UFUNCTION()
 	void DropWeapon();

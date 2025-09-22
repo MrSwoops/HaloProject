@@ -2,7 +2,7 @@
 
 
 #include "CustomGameMode.h"
-#include "BulletPoolManager.h"
+#include "Components/BulletPoolManager.h"
 
 ACustomGameMode::ACustomGameMode() 
 {

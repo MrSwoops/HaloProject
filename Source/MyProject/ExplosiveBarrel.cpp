@@ -3,7 +3,7 @@
 
 #include "ExplosiveBarrel.h"
 
-#include "ExplosiveComponent.h"
+#include "Components/ExplosiveComponent.h"
 #include "Interfaces/DamageDealer.h"
 
 // Sets default values
@@ -46,6 +46,12 @@ void AExplosiveBarrel::TakeDamage(const int32& Damage)
 		Mesh->SetCollisionProfileName("NoCollision");
 	}
 }
+
+void AExplosiveBarrel::TakeBulletDamage(const FBulletData&, const EHurtboxType&)
+{
+	
+}
+
 
 void AExplosiveBarrel::Reset()
 {

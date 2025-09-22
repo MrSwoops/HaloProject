@@ -3,7 +3,7 @@
 
 #include "Rocket.h"
 
-#include "MyProject/ExplosiveComponent.h"
+#include "MyProject/Components/ExplosiveComponent.h"
 
 ARocket::ARocket()
 {

@@ -7,6 +7,9 @@
 #include "EnergyShield.generated.h"
 
 
+enum EHurtboxType : int;
+struct FBulletData;
+class UEnergyShieldShellSKM;
 class APlayerCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,9 +24,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxEnergy = 70;
 	float CurrentEnergy = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UEnergyShieldShellSKM* ShieldMesh;
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float RegenDelay = 5.0f;
@@ -49,6 +58,10 @@ public:
 
 	void ResetRegenDelay();
 
+	void DisableShieldComponent();
+	void EnableShieldComponent();
+
 	int32 TakeDamage(const int32& IncomingDamage);
+	int32 TakeBulletDamage(const FBulletData& BulletData, const EHurtboxType& HitRegion);
 		
 };

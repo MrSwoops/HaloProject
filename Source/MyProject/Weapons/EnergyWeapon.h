@@ -45,6 +45,8 @@ public:
 
 	virtual void Reload() override;
 	virtual void AttachWeapon(AGameplayCharacter* TargetCharacter) override;
+
+	virtual float GetCurrentMagPercent() override {return 1 - (CurrentHeatLevel / MaxHeatLevel);}
 	
 	
 };

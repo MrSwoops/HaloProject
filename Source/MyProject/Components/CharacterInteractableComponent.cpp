@@ -3,13 +3,14 @@
 
 #include "CharacterInteractableComponent.h"
 
-#include "GameplayCharacter.h"
+#include "../GameplayCharacter.h"
 
 // Sets default values for this component's properties
 UCharacterInteractableComponent::UCharacterInteractableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SphereRadius = 32.f;
+	SetCollisionProfileName("Interaction");
 }
 
 
@@ -51,6 +52,7 @@ void UCharacterInteractableComponent::OnSphereEndOverlap(UPrimitiveComponent* Ov
 
 void UCharacterInteractableComponent::OnInteract(AGameplayCharacter* Character)
 {
-	
+	if (!RepeatableInteraction) Character->RemoveInteractable(this);
+	OnInteractDelegate.Broadcast(Character);
 }
 

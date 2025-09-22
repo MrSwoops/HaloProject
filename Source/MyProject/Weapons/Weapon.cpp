@@ -3,9 +3,9 @@
 
 #include "Weapon.h"
 
-#include "../MyProjectPickUpComponent.h"
+#include "../Components/MyProjectPickUpComponent.h"
 #include "../GameplayCharacter.h"
-#include "../BulletPoolManager.h"
+#include "../Components/BulletPoolManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,6 +19,7 @@
 #include "Engine/World.h"
 #include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/PlayerCharacter.h"
+#include "MyProject/GameModes/BaseGameMode.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -39,10 +40,10 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	PickUpComp->AttachedWeapon = this;
 	CurrentMagAmmo = MaxMagSize;
-	PickUpComp->OnPickUp.AddDynamic(this, &AWeapon::AttachWeapon);
+	PickUpComp->OnInteractDelegate.AddDynamic(this, &AWeapon::AttachWeapon);
 	CurrentReserveAmmo = (MaxReserveMags - 1) * MaxMagSize;
 	//SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 }
@@ -233,7 +234,7 @@ void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
 void AWeapon::DisableWeapon()
 {
 	SkeletalMeshComp->SetVisibility(false);
-	if (IsPlayerOwned) WeaponUI->SetVisibility(ESlateVisibility::Hidden);
+	if (IsPlayerOwned && WeaponUI) WeaponUI->SetVisibility(ESlateVisibility::Hidden);
 	GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
 }
 

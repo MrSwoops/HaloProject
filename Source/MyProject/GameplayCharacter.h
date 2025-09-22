@@ -7,6 +7,8 @@
 #include "Interfaces/IDamageable.h"
 #include "GameplayCharacter.generated.h"
 
+class UAIPerceptionStimuliSourceComponent;
+class UEnergyShieldShellSKM;
 class UEnergyShield;
 class UWeaponInventory;
 class USpringArmComponent;
@@ -25,6 +27,7 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRespawnCharacter, AGameplayCharacter*, Character);
 
 UCLASS()
 class MYPROJECT_API AGameplayCharacter : public ACharacter, public IIDamageable
@@ -38,18 +41,32 @@ public:
 public:
 	AGameplayCharacter();
 
+#pragma region Ragdoll
+
 	UFUNCTION(BlueprintCallable)
 	virtual void SetRagdoll(bool Active);
 
+	virtual void FellOutOfWorld(const class UDamageType& dmgType) override;
+	
+private:
+	FVector MeshLocation;
+	FRotator MeshRotation;
+
+#pragma endregion Ragdoll
+	
+public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Die();
-
+	UFUNCTION(BlueprintCallable)
+	virtual void Respawn(const FVector& Location, const FRotator& Rotation);
+	
 	bool IsDead = false;
 	
 #pragma region Weapons
 public:
 
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAIPerceptionStimuliSourceComponent* AIPerceptionStimuli;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWeaponInventory* WeaponInventory;
@@ -65,15 +82,21 @@ public:
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UEnergyShieldShellSKM* EnergyShieldShell;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UEnergyShield* EnergyShield;
 	
 	UPROPERTY(BlueprintReadOnly)
 	float Health = 0;
+
+	float GetHealthPercent();
 	
 	UPROPERTY(EditAnywhere)
 	float MaxHealth = 45;
 	virtual void TakeDamage(IDamageDealer*) override;
 	virtual void TakeDamage(const int32&) override;
+	virtual void TakeBulletDamage(const FBulletData&, const EHurtboxType&) override;
 
 	UCharacterInteractableComponent* CurrentInteraction = nullptr;
 	TArray<UCharacterInteractableComponent*> Interactables;

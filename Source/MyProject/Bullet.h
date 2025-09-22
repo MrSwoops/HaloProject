@@ -39,6 +39,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
+
+	FBulletData BulletData;
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -46,5 +49,5 @@ public:
 	virtual const float& GetDamage() override;
 
 	UFUNCTION()
-	void LoadBulletData(FBulletData BulletData);
+	void LoadBulletData(FBulletData InBulletData);
 };

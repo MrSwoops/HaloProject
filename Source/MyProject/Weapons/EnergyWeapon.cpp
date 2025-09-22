@@ -4,22 +4,22 @@
 #include "EnergyWeapon.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/BulletPoolManager.h"
+#include "MyProject/Components/BulletPoolManager.h"
 #include "MyProject/CharacterAnimInstance.h"
-#include "MyProject/CustomGameMode.h"
 #include "MyProject/FirstPersonAnimInstance.h"
-#include "MyProject/MyProjectPickUpComponent.h"
+#include "MyProject/Components/MyProjectPickUpComponent.h"
 #include "MyProject/PlayerCharacter.h"
+#include "MyProject/GameModes/BaseGameMode.h"
 #include "MyProject/UI/EnergyWeaponUIWidget.h"
 #include "MyProject/UI/WeaponUIWidget.h"
 
 void AEnergyWeapon::BeginPlay()
 {
 	Super::Super::BeginPlay();
-	GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	PickUpComp->AttachedWeapon = this;
 	CurrentMagAmmo = MaxMagSize;
-	PickUpComp->OnPickUp.AddDynamic(this, &AWeapon::AttachWeapon);
+	PickUpComp->OnInteractDelegate.AddDynamic(this, &AWeapon::AttachWeapon);
 	//SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 }
 
@@ -148,5 +148,5 @@ void AEnergyWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	{
 		AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
 	}
-	Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())->HasRifle = true;
+	if (auto* Animinstance = TargetCharacter->GetMesh()->GetAnimInstance())Cast<UCharacterAnimInstance>(Animinstance)->HasRifle = true;
 }

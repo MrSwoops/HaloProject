@@ -15,6 +15,11 @@ class MYPROJECT_API AAICharacter : public AGameplayCharacter
 	GENERATED_BODY()
 
 public:
+
+	AAICharacter();
+	
 	void MoveToRandomPoint();
+
+	void SetConfidence();
 	
 };

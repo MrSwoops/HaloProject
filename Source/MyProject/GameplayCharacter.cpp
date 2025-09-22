@@ -3,17 +3,24 @@
 
 #include "GameplayCharacter.h"
 
-#include "CharacterInteractableComponent.h"
-#include "EnergyShield.h"
+#include "Components/CharacterInteractableComponent.h"
+#include "Components/EnergyShield.h"
+#include "Components/EnergyShieldShellSKM.h"
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
+#include "Components/HurtBox.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
 #include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
-#include "WeaponInventory.h"
+#include "Components/WeaponInventory.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "GameModes/BaseGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Weapons/BulletData.h"
 #include "Weapons/Grenade.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -26,6 +33,7 @@ AGameplayCharacter::AGameplayCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName("CharacterWorldInteraction");
+	GetCapsuleComponent()->CanCharacterStepUpOn = ECB_Yes;
 
 	WeaponInventory = CreateDefaultSubobject<UWeaponInventory>(TEXT("WeaponInventory"));
 
@@ -36,16 +44,43 @@ AGameplayCharacter::AGameplayCharacter()
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -94.f));
 	GetMesh()->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	GetMesh()->SetNotifyRigidBodyCollision(true);
-	
+	EnergyShieldShell = CreateDefaultSubobject<UEnergyShieldShellSKM>(TEXT("EShieldShell"));
+	EnergyShieldShell->SetupAttachment(GetMesh());
+	EnergyShieldShell->SetLeaderPoseComponent(GetMesh());
+	EnergyShieldShell->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	EnergyShieldShell->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	if (EnergyShield && !EnergyShield->ShieldMesh) EnergyShield->ShieldMesh = EnergyShieldShell;
+	EnergyShieldShell->SetShieldVisibility(false);
+
+	AIPerceptionStimuli = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("AIPerceptionStimuli"));
 }
 
 void AGameplayCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Health = MaxHealth;
+
+	MeshLocation = GetMesh()->GetRelativeLocation();
+	MeshRotation = GetMesh()->GetRelativeRotation();
 }
 
+void AGameplayCharacter::Respawn(const FVector& Location, const FRotator& Rotation)
+{
+	SetRagdoll(false);
+	Health = MaxHealth;
+	IsDead = false;
+	WeaponInventory->InitializeInventory();
+	if (EnergyShield) EnergyShield->EnableShieldComponent();
+	SetActorLocationAndRotation(Location, Rotation);
+}
 
+float AGameplayCharacter::GetHealthPercent()
+{
+	if (EnergyShield)
+		return (EnergyShield->CurrentEnergy / EnergyShield->MaxEnergy) * (Health / MaxHealth);
+	else
+		return Health / MaxHealth;
+}
 
 
 void AGameplayCharacter::SetRagdoll(bool Active)
@@ -55,7 +90,7 @@ void AGameplayCharacter::SetRagdoll(bool Active)
 		FVector Velocity = GetVelocity();
 		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
+		GetMesh()->AddImpulse(Velocity, "pelvis", true);
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 	else
@@ -63,6 +98,8 @@ void AGameplayCharacter::SetRagdoll(bool Active)
 		GetMesh()->SetSimulatePhysics(false);
 		GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
+		GetMesh()->SetRelativeLocation(MeshLocation);
+		GetMesh()->SetRelativeRotation(MeshRotation);
 	}
 }
 
@@ -76,13 +113,20 @@ void AGameplayCharacter::UnCrouch()
 	ACharacter::UnCrouch(false);
 }
 
+void AGameplayCharacter::FellOutOfWorld(const class UDamageType& dmgType)
+{
+	Die();
+}
 
 
 void AGameplayCharacter::Die()
 {
+	if (IsDead) return;
 	IsDead = true;
 	WeaponInventory->DropInventory();
+	if (EnergyShield) EnergyShield->DisableShieldComponent();
 	SetRagdoll(true);
+	Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->RespawnCharacter(this);
 }
 
 
@@ -96,6 +140,29 @@ void AGameplayCharacter::TakeDamage(const int32& Damage)
 		Health -= EnergyShield->TakeDamage(Damage);
 	else
 		Health -= Damage;
+	if (Health <= 0 && !IsDead) Die();
+}
+void AGameplayCharacter::TakeBulletDamage(const FBulletData& BulletData, const EHurtboxType& HitRegion)
+{
+	if (EnergyShield)
+	{
+		int32 Damage = EnergyShield->TakeBulletDamage(BulletData, HitRegion);
+		if (Damage > 0)
+		{
+			if (BulletData.CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+				Health = 0;
+			else
+				Health -= Damage;
+		}
+	}
+	else
+	{
+		if (BulletData.CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+			Health = 0;
+		else
+			Health -= BulletData.Damage;
+		
+	}
 	if (Health <= 0 && !IsDead) Die();
 }
 

@@ -7,6 +7,7 @@
 #include "WeaponInventory.generated.h"
 
 
+class AEquipment;
 class AGrenade;
 class AWeapon;
 
@@ -30,6 +31,9 @@ public:
 	AWeapon* PrimaryWeapon = nullptr;
 	UPROPERTY()
 	AWeapon* SecondaryWeapon = nullptr;
+
+	UPROPERTY()
+	AEquipment* EquipmentSlot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AWeapon> StartingPrimary;
@@ -58,6 +62,10 @@ public:
 	void TryReloadWeapon();
 	void SwapWeapons();
 	void SwapWeapons(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void PickUpEquipment(AEquipment* Equipment);
+
+	void InitializeInventory();
 
 	void DropInventory();
 };

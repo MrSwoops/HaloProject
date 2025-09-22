@@ -3,7 +3,7 @@
 
 #include "Bullet.h"
 
-#include "HurtBox.h"
+#include "Components/HurtBox.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/IDamageable.h"
@@ -41,27 +41,38 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 		{
 			if (UHurtBox* HurtBox = Cast<UHurtBox>(OtherComp))
 			{
-				switch (HurtBox->HurtboxType)
-				{
-				case Head:
-					Damageable->TakeDamage(Damage * 2);
-					break;
-				case Limb:
-					Damageable->TakeDamage(this);
-					break;
-				case Torso:
-					Damageable->TakeDamage(this);
-					break;
-				default:
-					Damageable->TakeDamage(this);
-					break;
-				};
+				if (BulletData.HasPenetration && HurtBox->HurtboxType != EHurtboxType::Head)
+					ReturnToPool();
+				else
+					ReturnToPool();
+				
+				Damageable->TakeBulletDamage(BulletData, HurtBox->HurtboxType);
+				// switch (HurtBox->HurtboxType)
+				// {
+				// case Head:
+				// 	Damageable->TakeDamage(BulletData::);
+				// 	break;
+				// case Limb:
+				// 	Damageable->TakeDamage(this);
+				// 	break;
+				// case Torso:
+				// 	Damageable->TakeDamage(this);
+				// 	break;
+				// default:
+				// 	Damageable->TakeDamage(this);
+				// 	break;
+				// };
 			}
 			else
 			{
 				Damageable->TakeDamage(this);
+				ReturnToPool();
 			}
 		}
+	}
+	else
+	{
+		ReturnToPool();
 	}
 	if ((OtherActor == this) || (OtherComp == nullptr)) return;
 	
@@ -97,11 +108,12 @@ const float& ABullet::GetDamage()
 	return Damage;
 }
 
-void ABullet::LoadBulletData(FBulletData BulletData = BulletData::Default)
+void ABullet::LoadBulletData(FBulletData InBulletData = BulletData::Default)
 {
-	Damage = BulletData.Damage;
-	Movement->InitialSpeed = BulletData.Speed;
-	Movement->MaxSpeed = BulletData.Speed;
+	Damage = InBulletData.Damage;
+	Movement->InitialSpeed = InBulletData.Speed;
+	Movement->MaxSpeed = InBulletData.Speed;
+	this->BulletData = InBulletData;
 }
 
 

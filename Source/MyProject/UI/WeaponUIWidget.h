@@ -21,6 +21,7 @@ class MYPROJECT_API UWeaponUIWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* WeaponImage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

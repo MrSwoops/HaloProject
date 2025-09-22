@@ -9,6 +9,8 @@
 
 class AGameplayCharacter;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteract, AGameplayCharacter*, PickUpCharacter);
+
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYPROJECT_API UCharacterInteractableComponent : public USphereComponent
 {
@@ -25,6 +27,9 @@ public:
 
 	bool Enabled = true;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnInteract OnInteractDelegate;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -36,7 +41,9 @@ protected:
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	bool InteractOnAreaEnter;
+	bool InteractOnAreaEnter = false;
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	bool RepeatableInteraction = false;
 
 	
 		
