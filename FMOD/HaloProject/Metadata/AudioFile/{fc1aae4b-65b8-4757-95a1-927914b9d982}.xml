@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{fc1aae4b-65b8-4757-95a1-927914b9d982}">
+		<property name="assetPath">
+			<value>REALHALOASSETS(MUSTBEREPLACEDBEFORESHIPPING)/WeaponSounds/Frag/frag_pickup1.WAV</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.51664399092970525</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{daccf881-07a3-472c-8fce-fb0e274f59cf}</destination>
+		</relationship>
+	</object>
+</objects>

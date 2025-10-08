@@ -8,6 +8,7 @@
 #include "../Interfaces/DamageDealer.h"
 #include "Grenade.generated.h"
 
+class UFMODEvent;
 class UExplosiveComponent;
 class UMyProjectPickUpComponent;
 class USphereComponent;
@@ -61,7 +62,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	TArray<USoundBase*> ScavageSounds;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ThrowSound;
+	UFMODEvent* PickupSoundEvent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UFMODEvent* ThrowSoundEvent;
 	
 
 private:

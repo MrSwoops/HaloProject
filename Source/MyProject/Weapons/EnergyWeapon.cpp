@@ -3,6 +3,8 @@
 
 #include "EnergyWeapon.h"
 
+#include <FMODBlueprintStatics.h>
+
 #include "Kismet/GameplayStatics.h"
 #include "MyProject/Components/BulletPoolManager.h"
 #include "MyProject/CharacterAnimInstance.h"
@@ -49,19 +51,24 @@ void AEnergyWeapon::Fire()
 	{
 		if (CurrentReserveAmmo <= 0)
 		{
-			if (DryFireSound) UGameplayStatics::PlaySoundAtLocation(this, DryFireSound, Character->GetActorLocation());
+			FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+				GetWorld(), // Or a relevant UObject* from your current world context
+				DryFireSoundEvent,
+				GetActorTransform(),
+				true // bAutoPlay: true to start playing immediately
+			);
 			return;
 		}
 	}
 
 	ShootBullet();
 	
-	if (FireSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, FireSounds.Num() - 1);
-		USoundBase* FireSound = FireSounds[RandomSoundIndex];
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
-	}
+	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+		GetWorld(), // Or a relevant UObject* from your current world context
+		FireSoundEvent,
+		GetActorTransform(),
+		true // bAutoPlay: true to start playing immediately
+	);
 	
 	if (IsPlayerOwned && FireAnimation != nullptr)
 	{

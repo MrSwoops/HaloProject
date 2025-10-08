@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{b10655af-f6c9-4441-aa6b-0c9c18d94afe}">
+		<property name="assetPath">
+			<value>REALHALOASSETS(MUSTBEREPLACEDBEFORESHIPPING)/Vehicles/cov_damage_small3.WAV</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>2.0114285714285716</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{daccf881-07a3-472c-8fce-fb0e274f59cf}</destination>
+		</relationship>
+	</object>
+</objects>

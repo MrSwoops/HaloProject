@@ -3,6 +3,8 @@
 
 #include "Grenade.h"
 
+#include <FMODBlueprintStatics.h>
+
 #include "../Components/MyProjectPickUpComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
@@ -80,7 +82,7 @@ void AGrenade::Throw()
 	PickUpComponent->SetActive(false);
 	SetActive(true);
 	ProjectileMovement->SetVelocityInLocalSpace(FVector().ForwardVector * ProjectileMovement->InitialSpeed);
-	UGameplayStatics::PlaySoundAtLocation(this, ThrowSound, GetActorLocation());
+	UFMODBlueprintStatics::PlayEventAtLocation(this, ThrowSoundEvent, GetActorTransform(), true);
 }
 
 

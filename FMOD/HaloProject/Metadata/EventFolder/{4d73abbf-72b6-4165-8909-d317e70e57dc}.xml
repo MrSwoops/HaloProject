@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EventFolder" id="{4d73abbf-72b6-4165-8909-d317e70e57dc}">
+		<property name="name">
+			<value>M9_HE_DP</value>
+		</property>
+		<relationship name="folder">
+			<destination>{cd07ba17-4ae9-4ba6-be27-2aa6cfc28c33}</destination>
+		</relationship>
+	</object>
+</objects>

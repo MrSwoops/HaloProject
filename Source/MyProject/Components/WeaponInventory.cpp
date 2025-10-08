@@ -3,6 +3,8 @@
 
 #include "WeaponInventory.h"
 
+#include <FMODBlueprintStatics.h>
+
 #include "../GameModes/BaseGameMode.h"
 #include "../Weapons/Grenade.h"
 #include "Kismet/GameplayStatics.h"
@@ -180,7 +182,7 @@ bool UWeaponInventory::TryGetGrenade(const FVector& SpawnLocation, const FRotato
 
 #pragma endregion Grenades
 
-bool UWeaponInventory::ScavengeWeapon(AWeapon* Weapon)
+bool UWeaponInventory::ScavageWeapon(AWeapon* Weapon)
 {
 	if (Weapon->IsSameWeaponType(PrimaryWeapon))
 	{
@@ -195,7 +197,20 @@ bool UWeaponInventory::ScavengeWeapon(AWeapon* Weapon)
 bool UWeaponInventory::FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon)
 {
 	int32 AmmoNeeded = FillWeapon->MaxReserveMags * FillWeapon->MaxMagSize - FillWeapon->CurrentReserveAmmo;
+	if (AmmoNeeded <= 0) return false;
 	int32 AmmoAvailable = LootedWeapon->CurrentReserveAmmo + LootedWeapon->CurrentMagAmmo;
+
+	FFMODEventInstance FMInstance = UFMODBlueprintStatics::PlayEvent2D(
+		GetWorld(),
+		LootedWeapon->ScavageSoundEvent,
+		true
+	);
+	// FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+	// 	GetWorld(), // Or a relevant UObject* from your current world context
+	// 	LootedWeapon->ScavageSoundEvent,
+	// 	GetActorTransform(),
+	// 	true // bAutoPlay: true to start playing immediately
+	// );
 	
 	if (AmmoAvailable <= AmmoNeeded) // Take all ammo and delete looted gun
 	{

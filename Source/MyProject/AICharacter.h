@@ -17,9 +17,17 @@ class MYPROJECT_API AAICharacter : public AGameplayCharacter
 public:
 
 	AAICharacter();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void AIMove(const FVector2D& Value);
+	UFUNCTION(BlueprintCallable)
+	void LookAtPoint(const FVector& TargetPoint, bool bUsePitch);
 	
 	void MoveToRandomPoint();
 
 	void SetConfidence();
+
+protected:
+	virtual void BeginPlay() override;
 	
 };

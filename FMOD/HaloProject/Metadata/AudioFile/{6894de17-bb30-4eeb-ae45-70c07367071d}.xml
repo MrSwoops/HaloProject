@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{6894de17-bb30-4eeb-ae45-70c07367071d}">
+		<property name="assetPath">
+			<value>REALHALOASSETS(MUSTBEREPLACEDBEFORESHIPPING)/WeaponSounds/Shotgun/sg_melee2_b.WAV</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.1000453514739228</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{daccf881-07a3-472c-8fce-fb0e274f59cf}</destination>
+		</relationship>
+	</object>
+</objects>

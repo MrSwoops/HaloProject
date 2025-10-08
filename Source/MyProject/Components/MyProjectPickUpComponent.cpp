@@ -1,6 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MyProjectPickUpComponent.h"
+
+#include <FMODBlueprintStatics.h>
+
 #include "../GameplayCharacter.h"
 #include "../Weapons/Weapon.h"
 #include "WeaponInventory.h"
@@ -29,7 +32,13 @@ void UMyProjectPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* Overla
 		if (AttachedWeapon && ((Character->WeaponInventory->PrimaryWeapon && Character->WeaponInventory->PrimaryWeapon->IsSameWeaponType(AttachedWeapon)) ||
 			(Character->WeaponInventory->SecondaryWeapon && Character->WeaponInventory->SecondaryWeapon->IsSameWeaponType(AttachedWeapon)))) // Has Weapon
 		{
-			if (Character->ScavengeWeapon(AttachedWeapon))
+			// FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+			// 	GetWorld(), // Or a relevant UObject* from your current world context
+			// 	AttachedWeapon->ScavageSoundEvent,
+			// 	GetOwner()->GetActorTransform(),
+			// 	true // bAutoPlay: true to start playing immediately
+			// );
+			if (Character->WeaponInventory->ScavageWeapon(AttachedWeapon))
 			{
 				AttachedWeapon->Destroy();
 			}

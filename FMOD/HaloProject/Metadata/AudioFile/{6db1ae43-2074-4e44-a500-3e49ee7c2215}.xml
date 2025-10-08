@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{6db1ae43-2074-4e44-a500-3e49ee7c2215}">
+		<property name="assetPath">
+			<value>REALHALOASSETS(MUSTBEREPLACEDBEFORESHIPPING)/WeaponSounds/RocketL/rocket_h3_2.WAV</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>2.0694784580498866</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{daccf881-07a3-472c-8fce-fb0e274f59cf}</destination>
+		</relationship>
+	</object>
+</objects>

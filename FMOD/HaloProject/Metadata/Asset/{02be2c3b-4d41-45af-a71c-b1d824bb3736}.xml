@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EncodableAsset" id="{02be2c3b-4d41-45af-a71c-b1d824bb3736}">
+		<property name="assetPath">
+			<value>REALHALOASSETS(MUSTBEREPLACEDBEFORESHIPPING)/WeaponSounds/RocketL/</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{daccf881-07a3-472c-8fce-fb0e274f59cf}</destination>
+		</relationship>
+	</object>
+</objects>

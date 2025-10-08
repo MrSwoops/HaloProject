@@ -6,6 +6,7 @@
 #include "../Bullet.h"
 #include "Rocket.generated.h"
 
+class UFMODAudioComponent;
 class UExplosiveComponent;
 /**
  * 
@@ -22,4 +23,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UExplosiveComponent* ExplosiveComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
+	UFMODEvent* PropelLoopSoundEvent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
+	UFMODAudioComponent* PropelLoopSoundComponent;
+
+	virtual void SetActive(bool i) override;
 };

@@ -3,6 +3,8 @@
 
 #include "EnergyShield.h"
 
+#include <FMODAudioComponent.h>
+
 #include "EnergyShieldShellSKM.h"
 #include "HurtBox.h"
 #include "../PlayerCharacter.h"
@@ -14,9 +16,9 @@ UEnergyShield::UEnergyShield()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	
-	RegenAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("RegenAudioComponent"));
-	RegenAudioComponent->bAutoActivate = false; // don't auto-play
-	RegenAudioComponent->bIsUISound = false;    // optional, if it's 3D/2D
+	RegenAudioComponent = CreateDefaultSubobject<UFMODAudioComponent>(TEXT("RegenAudioComponent"));
+	RegenAudioComponent->bAutoActivate = false;
+
 	if (AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner()))
 	{
 		Owner->EnergyShield = this;
@@ -36,9 +38,10 @@ void UEnergyShield::BeginPlay()
 	//if (ShieldMesh) ShieldMesh->SetShieldVisibility(false);
 	if (Player)
 	{
-		RegenAudioComponent = NewObject<UAudioComponent>(Player, UAudioComponent::StaticClass());
+		
+		RegenAudioComponent = NewObject<UFMODAudioComponent>(Player, UFMODAudioComponent::StaticClass());
 		RegenAudioComponent->SetupAttachment(Player->GetRootComponent());
-		RegenAudioComponent->SetSound(RegenSound);
+		RegenAudioComponent->SetEvent(RegenSoundEvent);
 	}
 	CurrentEnergy = MaxEnergy;
 }

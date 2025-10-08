@@ -7,6 +7,8 @@
 #include "EnergyShield.generated.h"
 
 
+class UFMODEvent;
+class UFMODAudioComponent;
 enum EHurtboxType : int;
 struct FBulletData;
 class UEnergyShieldShellSKM;
@@ -48,10 +50,10 @@ public:
 
 	APlayerCharacter* Player;
 
-	UPROPERTY(EditAnywhere, Category = "Shield Regen")
-	USoundBase* RegenSound; // Sound asset to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
+	UFMODEvent* RegenSoundEvent;
 
-	UAudioComponent* RegenAudioComponent;
+	UFMODAudioComponent* RegenAudioComponent;
 
 	void StartEnergyRegen();
 	void StopEnergyRegen();

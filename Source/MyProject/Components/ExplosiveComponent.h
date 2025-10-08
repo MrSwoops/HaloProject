@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MyProject/Weapons/AutomaticWeapon.h"
 #include "ExplosiveComponent.generated.h"
 
 
@@ -24,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Audio")
-	TArray<USoundBase*> ExplosionSounds;
+	UFMODEvent* ExplosionSoundEvent;
 	
 	UPROPERTY(EditDefaultsOnly)
 	float ExplosionRadius = 175.0f;

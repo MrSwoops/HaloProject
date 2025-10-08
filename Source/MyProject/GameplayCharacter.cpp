@@ -64,6 +64,22 @@ void AGameplayCharacter::BeginPlay()
 	MeshRotation = GetMesh()->GetRelativeRotation();
 }
 
+void AGameplayCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (bShouldRotateToCamera)
+	{
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, DesiredRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed);
+		SetActorRotation(NewRotation);
+		if (CurrentRotation.Equals(DesiredRotation, 0.5f)) // close enough
+		{
+			bShouldRotateToCamera = false;
+		}
+	}
+}
+
+
 void AGameplayCharacter::Respawn(const FVector& Location, const FRotator& Rotation)
 {
 	SetRagdoll(false);
@@ -238,9 +254,9 @@ void AGameplayCharacter::PickUpWeapon(AWeapon* Weapon)
 		WeaponInventory->PickUpWeapon(Weapon);
 }
 
-bool AGameplayCharacter::ScavengeWeapon(AWeapon* Weapon) // Returns true if scavenged weapon is empty and needs to be deleted
+bool AGameplayCharacter::ScavageWeapon(AWeapon* Weapon) // Returns true if scavenged weapon is empty and needs to be deleted
 {
-	return WeaponInventory->ScavengeWeapon(Weapon);
+	return WeaponInventory->ScavageWeapon(Weapon);
 }
 
 
@@ -259,25 +275,52 @@ void AGameplayCharacter::TryInteract()
 void AGameplayCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add movement 
-		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-		AddMovementInput(GetActorRightVector(), MovementVector.X);
-	}
+	Move(Value.Get<FVector2D>());
+	
 }
+
+void AGameplayCharacter::Move(const FVector2D& Value)
+{
+	if (Controller == nullptr) return;
+
+	// Get the controller's control rotation (ignoring pitch for movement)
+	FRotator ControlRotation = Controller->GetControlRotation();
+
+	// Use only the yaw rotation (ignore pitch/roll)
+	ControlRotation.Pitch = 0.0f;
+	ControlRotation.Roll = 0.0f;
+
+	// Get the direction vectors based on the controller's yaw
+	FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X);  // Forward (X)
+	FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y);    // Right (Y)
+	
+	AddMovementInput(ForwardDirection, Value.Y);
+	AddMovementInput(RightDirection, Value.X);
+}
+
 
 void AGameplayCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
+	if (Controller == nullptr) return;
+	
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	// Create Look rotation
+	FRotator ControlRotation = Controller->GetControlRotation();
+	float NewYaw = ControlRotation.Yaw + LookAxisVector.X;
+	float NewPitch = ControlRotation.Pitch - LookAxisVector.Y;
+	NewPitch = FMath::Clamp(NewPitch, -89.0f, 89.0f);
+
+	Controller->SetControlRotation(FRotator(NewPitch, NewYaw, 0.0f));
+
+	// IK rig check
+	FRotator CharacterRotation = GetActorRotation();
+	float NormalizedYaw = FMath::UnwindDegrees(NewYaw);
+	float NormalizedCharYaw = FMath::UnwindDegrees(CharacterRotation.Yaw);
+	float YawDifference = FMath::Abs(FMath::FindDeltaAngleDegrees(NormalizedCharYaw, NormalizedYaw));
+	if (YawDifference > IKRigYawFreedom)
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		DesiredRotation = FRotator(0.f, NewYaw, 0.f);
+		bShouldRotateToCamera = true;
 	}
 }

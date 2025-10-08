@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EventFolder" id="{cd07ba17-4ae9-4ba6-be27-2aa6cfc28c33}">
+		<property name="name">
+			<value>UNSC</value>
+		</property>
+		<relationship name="folder">
+			<destination>{2e64dda6-38a9-4191-9d43-702ad0d23176}</destination>
+		</relationship>
+	</object>
+</objects>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EventFolder" id="{f4d999f5-e3da-4979-9f75-071c0274782a}">
+		<property name="name">
+			<value>PlasmaRifle</value>
+		</property>
+		<relationship name="folder">
+			<destination>{14ad6c4c-e454-4385-b35b-cd43ce2b5f30}</destination>
+		</relationship>
+	</object>
+</objects>

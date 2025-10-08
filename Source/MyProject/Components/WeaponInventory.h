@@ -43,7 +43,7 @@ public:
 	void PickUpWeapon(AWeapon* Weapon);
 	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
-	bool ScavengeWeapon(AWeapon* Weapon);
+	bool ScavageWeapon(AWeapon* Weapon);
 	bool FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)

@@ -12,3 +12,19 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
+
+# FMOD Studio Project Files
+**/FMODStudioProject/.user/
+**/FMODStudioProject/.cache/
+**/FMODStudioProject/.unsaved/
+
+# If you choose not to include built banks or assets in source control
+**/FMODStudioProject/Build/
+**/FMODStudioProject/Assets/
+
+# FMOD Unreal Engine Integration (adjust if you need to include binaries)
+# If you are committing the FMOD integration and need its binaries:
+!Plugins/FMODStudio/Binaries/
+# The line above would explicitly include the FMODStudio plugin binaries
+# while other plugin binaries might still be ignored by a broader rule like:
+# Plugins/**/Binaries/*

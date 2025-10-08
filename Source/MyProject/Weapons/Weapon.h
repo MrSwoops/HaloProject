@@ -4,9 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Framework/WeaponAmmoHandler.h"
+#include "Framework/WeaponFireHandler.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyProject/GameModes/BaseGameMode.h"
+#include "WeaponData/WeaponAmmoData.h"
+#include "WeaponData/WeaponFireData.h"
 #include "Weapon.generated.h"
 
+class UWeaponFireData;
+class UWeaponFireHandler;
+class UWeaponAmmoHandler;
+class UWeaponAmmoData;
 class ABaseGameMode;
 class AGameplayCharacter;
 struct FEnhancedInputActionEventBinding;
@@ -14,6 +24,7 @@ class AMyProjectCharacter;
 class ACustomGameMode;
 class UMyProjectPickUpComponent;
 class UWeaponUIWidget;
+class UFMODEvent;
 struct FGameplayTag;
 
 namespace WeaponTags
@@ -38,7 +49,6 @@ public:
 	void DisableWeapon();
 	void EnableWeapon();
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FGameplayTag WeaponType;
 	
@@ -59,11 +69,15 @@ public:
 	virtual void AttachWeapon(AGameplayCharacter* TargetCharacter);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	TArray<USoundBase*> FireSounds;
+	UFMODEvent* FireSoundEvent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	USoundBase* DryFireSound;
+	UFMODEvent* DryFireSoundEvent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	TArray<USoundBase*> ReloadSounds;
+	UFMODEvent* ReloadSoundEvent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	UFMODEvent* MeleeSoundEvent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	UFMODEvent* ScavageSoundEvent;
 	
 	UPROPERTY(EditDefaultsOnly)
 	float FireRate = 0.1f;
@@ -97,8 +111,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Animations)
 	TArray<UAnimMontage*> FPMeleeAnimations;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
-	TArray<USoundBase*> MeleeSounds;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MeleeLungeDistance;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -147,4 +160,29 @@ public:
 	bool IsPlayerOwned = false;
 
 	void UpdateReserveAmmoUI();
+
+	////////////////////////////////////////// New Weapon Stuff //////////////////////////////////////////
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UWeaponAmmoData* AmmoData;
+	UWeaponAmmoHandler* AmmoHandler;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UWeaponFireData* FireData;
+	UWeaponFireHandler* FireHandler;
+	void InitializeWeapon()
+	{
+		if (AmmoData)
+		{
+			AmmoHandler = NewObject<UWeaponAmmoHandler>(this, AmmoData->AmmoHandlerType);
+			AmmoHandler->Initialize(AmmoData);
+		}
+		if (FireData)
+		{
+			FireHandler = NewObject<UWeaponFireHandler>(this, FireData->FireHandlerType);
+			FireHandler->Initialize(FireData, Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager);
+			FireHandler->WeaponOwner = this;
+			FireHandler->MuzzleOffset = &MuzzleOffset;
+			FireHandler->WeaponType = &WeaponType;
+		}
+	}
 };

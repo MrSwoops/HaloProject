@@ -11,7 +11,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
-#include "../CustomGameMode.h"
 #include "EnhancedInputComponent.h"
 #include "../FirstPersonAnimInstance.h"
 #include "../UI/WeaponUIWidget.h"
@@ -19,6 +18,7 @@
 #include "Engine/World.h"
 #include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/PlayerCharacter.h"
+#include "FMODBlueprintStatics.h"
 #include "MyProject/GameModes/BaseGameMode.h"
 
 // Sets default values
@@ -59,7 +59,12 @@ void AWeapon::Fire()
 	{
 		if (CurrentReserveAmmo <= 0)
 		{
-			if (DryFireSound) UGameplayStatics::PlaySoundAtLocation(this, DryFireSound, Character->GetActorLocation());
+			FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+				GetWorld(), // Or a relevant UObject* from your current world context
+				DryFireSoundEvent,
+				GetActorTransform(),
+				true // bAutoPlay: true to start playing immediately
+			);
 			return;
 		}
 		Reload();
@@ -68,12 +73,12 @@ void AWeapon::Fire()
 
 	ShootBullet();
 	
-	if (FireSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, FireSounds.Num() - 1);
-		USoundBase* FireSound = FireSounds[RandomSoundIndex];
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
-	}
+	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+		GetWorld(), // Or a relevant UObject* from your current world context
+		FireSoundEvent,
+		GetActorTransform(),
+		true // bAutoPlay: true to start playing immediately
+	);
 	
 	if (IsPlayerOwned && FireAnimation != nullptr)
 	{
@@ -99,12 +104,30 @@ void AWeapon::ShootBullet()
 		FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+		
+		FVector Start = PlayerController->PlayerCameraManager->GetCameraLocation();
+		FVector End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 2000.f);
+		FHitResult HitResult;
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(Character);
+		CollisionParams.AddIgnoredActor(this); // Optional: add actors to ignore from the trace, e.g., the actor performing the trace
+		DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 5.f, 0, 1.f);
+#define ECC_Hurtbox ECC_GameTraceChannel4
+		bool bHit = GetWorld()->LineTraceSingleByObjectType(
+			HitResult,
+			Start,
+			End,
+			FCollisionObjectQueryParams(ECC_Hurtbox), // Object channel(s) to hit
+			CollisionParams
+		);
+		FVector Direction = (bHit) ? (HitResult.ImpactPoint - SpawnLocation).GetSafeNormal() : SpawnRotation.Vector();
+		//if (bHit) DrawDebugLine(GetWorld(), SpawnLocation, HitResult.ImpactPoint, FColor::Green, false, 5.f, 0, 1.f); else DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + (Direction * 20000), FColor::Red, false, 5.f, 0, 1.f);
 
 		//Set Spawn Collision Handling Override
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-		FVector ForwardVector = SpawnRotation.Vector(); // Converts rotation to direction vector
+		FVector ForwardVector = Direction;//SpawnRotation.Vector(); // Converts rotation to direction vector
 		float ConeHalfAngleRad = FMath::DegreesToRadians(Spread); // Spread is an angle in radians. Convert degrees if needed:
 		FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
 		FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
@@ -124,13 +147,16 @@ void AWeapon::Reload()
 			AnimInstance->Montage_Play(ReloadAnimation, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
 		}
 	}
-	if (ReloadSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, ReloadSounds.Num() - 1);
-		USoundBase* FireSound = ReloadSounds[RandomSoundIndex];
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
-		
-	}
+	UFMODAudioComponent* FMODInstance = UFMODBlueprintStatics::PlayEventAttached(
+		ReloadSoundEvent,
+		GetRootComponent(),
+		"",
+		FVector::ZeroVector,
+		EAttachLocation::Type::SnapToTarget,
+		true,
+		true,
+		true
+	);
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeapon::ReloadMag, (ReloadAnimation) ? ReloadAnimation->GetPlayLength() : 1.0f, false);
 }
 void AWeapon::ReloadMag()
@@ -148,13 +174,12 @@ void AWeapon::ReloadMag()
 
 void AWeapon::Melee()
 {
-	if (MeleeSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, MeleeSounds.Num() - 1);
-		USoundBase* FireSound = MeleeSounds[RandomSoundIndex];
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
-		
-	}
+	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+		GetWorld(), // Or a relevant UObject* from your current world context
+		MeleeSoundEvent,
+		GetActorTransform(),
+		true // bAutoPlay: true to start playing immediately
+	);
 	if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
 	{
 		if (FPMeleeAnimations.Num() <= 0) return;
@@ -167,6 +192,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 {
 	if (!TargetCharacter) return;
 	Character = TargetCharacter;
+	if (FireHandler) FireHandler->CharacterOwner = TargetCharacter;
 
 	SkeletalMeshComp->SetEnableGravity(false);
 	SkeletalMeshComp->SetSimulatePhysics(false);
@@ -179,6 +205,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	if (APlayerCharacter* PC = Cast<APlayerCharacter>(TargetCharacter))
 	{
 		IsPlayerOwned = true;
+		if (FireHandler) FireHandler->IsPlayerOwned = true;
 		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(PC->GetController()), WeaponUIClass);
 		if (WeaponUI)
 		{
@@ -189,6 +216,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	}
 	else
 	{
+		if (FireHandler) FireHandler->AimPoint = &Cast<UCharacterAnimInstance>(Character->GetMesh()->GetAnimInstance())->TargetLookRigPoint;
 		AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
 	}
 	Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())->HasRifle = true;
@@ -196,6 +224,11 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 
 void AWeapon::DropWeapon()
 {
+	if (FireHandler)
+	{
+		FireHandler->CharacterOwner = nullptr;
+		FireHandler->IsPlayerOwned = false;
+	}
 	if (WeaponUI) WeaponUI->RemoveFromParent();
 	if (IsPlayerOwned)
 	{

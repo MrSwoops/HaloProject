@@ -73,7 +73,7 @@ public:
 	
 	void PickUpWeapon(AWeapon* Weapon);
 	UFUNCTION()
-	bool ScavengeWeapon(AWeapon* Weapon);
+	bool ScavageWeapon(AWeapon* Weapon);
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual bool PickUpGrenade(AGrenade* Grenade);
@@ -104,13 +104,21 @@ public:
 	virtual void AddInteractable(UCharacterInteractableComponent* Interactable);
 	virtual void RemoveInteractable(UCharacterInteractableComponent* Interactable);
 	
+	UFUNCTION(BlueprintCallable)
+	virtual void Move(const FVector2D& Value);
+	void Move(const FInputActionValue& Value);
 protected:
 	virtual void BeginPlay() override;
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	virtual void Tick(float DeltaSeconds) override;
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	UPROPERTY(BlueprintReadOnly)
+	FRotator DesiredRotation;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Controls")
+	float IKRigYawFreedom = 35.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Controls")
+	float RotationSpeed = 5.0f;
+	bool bShouldRotateToCamera = false;
 
 	virtual void Crouch();
 	virtual void UnCrouch();
@@ -128,8 +136,5 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 	
-public:
-	
-	//USkeletalMeshComponent* GetMesh2P() const { return CharacterMesh; }
 	
 };

@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "CharacterAnimInstance.h"
 #include "Components/CharacterInteractableComponent.h"
 #include "Components/EnergyShield.h"
 #include "Animation/AnimInstance.h"
@@ -52,7 +53,11 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetComponentForwardVector;
+		AnimInstance->TargetLookRigComponent = FirstPersonCameraComponent;
+	}
 	UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
 }
 
@@ -136,6 +141,7 @@ void APlayerCharacter::SetCameraPersp(const bool& FirstPerson)
 		FirstPersonMesh->SetOwnerNoSee(false);
 		FirstPersonCameraComponent->SetActive(true);
 		ThirdPersonCameraComponent->SetActive(false);
+		Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->TargetLookRigComponent = FirstPersonCameraComponent;
 		//bUseControllerRotationYaw = true;
 	}
 	else
@@ -144,6 +150,7 @@ void APlayerCharacter::SetCameraPersp(const bool& FirstPerson)
 		FirstPersonMesh->SetOwnerNoSee(true);
 		ThirdPersonCameraComponent->SetActive(true);
 		FirstPersonCameraComponent->SetActive(false);
+		Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->TargetLookRigComponent = ThirdPersonCameraComponent;
 		//bUseControllerRotationYaw = false;
 	}
 }

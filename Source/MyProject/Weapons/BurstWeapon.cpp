@@ -2,6 +2,9 @@
 
 
 #include "BurstWeapon.h"
+
+#include <FMODBlueprintStatics.h>
+
 #include "../GameplayCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyProject/PlayerCharacter.h"
@@ -16,7 +19,12 @@ void ABurstWeapon::Fire()
 	{
 		if (CurrentReserveAmmo <= 0)
 		{
-			if (DryFireSound) UGameplayStatics::PlaySoundAtLocation(this, DryFireSound, Character->GetActorLocation());
+			FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+				GetWorld(), // Or a relevant UObject* from your current world context
+				DryFireSoundEvent,
+				GetActorTransform(),
+				true // bAutoPlay: true to start playing immediately
+			);
 			return;
 		}
 		Reload();
@@ -33,12 +41,12 @@ void ABurstWeapon::ShootBullet()
 {
 	Super::ShootBullet();
 
-	if (FireSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, FireSounds.Num() - 1);
-		USoundBase* FireSound = FireSounds[RandomSoundIndex];
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
-	}
+	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+		GetWorld(), // Or a relevant UObject* from your current world context
+		FireSoundEvent,
+		GetActorTransform(),
+		true // bAutoPlay: true to start playing immediately
+	);
 	
 	// Try and play a firing animation if specified
 	if (FireAnimation != nullptr)

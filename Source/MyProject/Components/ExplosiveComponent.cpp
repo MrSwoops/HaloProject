@@ -3,6 +3,8 @@
 
 #include "ExplosiveComponent.h"
 
+#include <FMODBlueprintStatics.h>
+
 #include "../GameplayCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -35,11 +37,12 @@ void UExplosiveComponent::BeginPlay()
 void UExplosiveComponent::CreateExplosion()
 {
 	FVector ExplosionLocation = GetOwner()->GetActorLocation();
-	if (ExplosionSounds.Num() > 0)
-	{
-		int32 RandomSoundIndex = FMath::RandRange(0, ExplosionSounds.Num() - 1);
-		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSounds[RandomSoundIndex], ExplosionLocation);
-	} 
+	FFMODEventInstance EventInstance = UFMODBlueprintStatics::PlayEventAtLocation(
+		GetWorld(),
+		ExplosionSoundEvent,
+		GetOwner()->GetActorTransform(),
+		true
+	);
 
 	TArray<AActor*> IgnoredActors;
 	TArray<AActor*> OutActors;
