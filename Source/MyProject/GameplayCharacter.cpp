@@ -16,12 +16,11 @@
 #include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
 #include "Components/WeaponInventory.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "GameModes/BaseGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Weapons/BulletData.h"
 #include "Weapons/Grenade.h"
+#include "Weapons/WeaponData/ProjectileData.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -158,14 +157,14 @@ void AGameplayCharacter::TakeDamage(const int32& Damage)
 		Health -= Damage;
 	if (Health <= 0 && !IsDead) Die();
 }
-void AGameplayCharacter::TakeBulletDamage(const FBulletData& BulletData, const EHurtboxType& HitRegion)
+void AGameplayCharacter::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
 {
 	if (EnergyShield)
 	{
-		int32 Damage = EnergyShield->TakeBulletDamage(BulletData, HitRegion);
+		int32 Damage = EnergyShield->TakeProjectileDamage(BulletData, HitRegion);
 		if (Damage > 0)
 		{
-			if (BulletData.CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+			if (BulletData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
 				Health = 0;
 			else
 				Health -= Damage;
@@ -173,10 +172,10 @@ void AGameplayCharacter::TakeBulletDamage(const FBulletData& BulletData, const E
 	}
 	else
 	{
-		if (BulletData.CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+		if (BulletData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
 			Health = 0;
 		else
-			Health -= BulletData.Damage;
+			Health -= BulletData->Damage;
 		
 	}
 	if (Health <= 0 && !IsDead) Die();

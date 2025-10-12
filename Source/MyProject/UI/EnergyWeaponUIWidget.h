@@ -21,6 +21,6 @@ public:
 
 	virtual void UpdateAmmoUI(const float& CurrentMagAmmo) override;
 
-	virtual void InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo) override;
+	virtual void InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo, UWeaponUIData* UIData) override;
 	
 };

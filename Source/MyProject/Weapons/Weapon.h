@@ -7,10 +7,7 @@
 #include "Framework/WeaponAmmoHandler.h"
 #include "Framework/WeaponFireHandler.h"
 #include "GameFramework/Actor.h"
-#include "Kismet/GameplayStatics.h"
 #include "MyProject/GameModes/BaseGameMode.h"
-#include "WeaponData/WeaponAmmoData.h"
-#include "WeaponData/WeaponFireData.h"
 #include "Weapon.generated.h"
 
 class UWeaponFireData;
@@ -69,37 +66,12 @@ public:
 	virtual void AttachWeapon(AGameplayCharacter* TargetCharacter);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	UFMODEvent* FireSoundEvent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	UFMODEvent* DryFireSoundEvent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	UFMODEvent* ReloadSoundEvent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
 	UFMODEvent* MeleeSoundEvent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
 	UFMODEvent* ScavageSoundEvent;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float FireRate = 0.1f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
-	UAnimMontage* FireAnimation;
-	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void Fire();
-	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void FireHeld() {}
 
-	UFUNCTION()
-	virtual void ShootBullet();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
-	UAnimMontage* ReloadAnimation;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Reload();
-	UPROPERTY()
-	FTimerHandle ReloadTimerHandle;
-protected:
-	UFUNCTION()
-	virtual void ReloadMag();
 
 	//FGameplayTagContainer ReloadTags;
 	
@@ -119,23 +91,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<UWeaponUIWidget> WeaponUIClass;
 	UPROPERTY()
 	UWeaponUIWidget* WeaponUI;
-
-	UPROPERTY(EditDefaultsOnly)
-	float Spread = 5.0f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	int32 MaxMagSize;
-	UPROPERTY(EditDefaultsOnly)
-	int32 MaxReserveMags;
-
-	int32 CurrentMagAmmo;
-	int32 CurrentReserveAmmo;
-
-	virtual float GetCurrentMagPercent() {return static_cast<float>(CurrentMagAmmo) / static_cast<float>(MaxMagSize);}
 
 	UFUNCTION()
 	void DropWeapon();
@@ -146,43 +103,40 @@ public:
 	void BindActions(UEnhancedInputComponent* InpComp);
 	void UnbindActions(UEnhancedInputComponent* InpComp);
 	TMap<UInputAction*, FEnhancedInputActionEventBinding*> Bindings;
+	TMap<FString, FEnhancedInputActionEventBinding*> Bindings2;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 public:
 	UPROPERTY()
 	AGameplayCharacter* Character;
 
-	bool Racked = true;
-public:	
-
 	bool IsPlayerOwned = false;
 
-	void UpdateReserveAmmoUI();
-
 	////////////////////////////////////////// New Weapon Stuff //////////////////////////////////////////
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UWeaponAmmoData* AmmoData;
-	UWeaponAmmoHandler* AmmoHandler;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void FirePressed();
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void FireReleased();
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
 	UWeaponFireData* FireData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
+	UWeaponAmmoData* AmmoData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
+	UProjectileData* ProjectileData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
+	UWeaponUIData* UIData;
+
+	UPROPERTY()
 	UWeaponFireHandler* FireHandler;
-	void InitializeWeapon()
-	{
-		if (AmmoData)
-		{
-			AmmoHandler = NewObject<UWeaponAmmoHandler>(this, AmmoData->AmmoHandlerType);
-			AmmoHandler->Initialize(AmmoData);
-		}
-		if (FireData)
-		{
-			FireHandler = NewObject<UWeaponFireHandler>(this, FireData->FireHandlerType);
-			FireHandler->Initialize(FireData, Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager);
-			FireHandler->WeaponOwner = this;
-			FireHandler->MuzzleOffset = &MuzzleOffset;
-			FireHandler->WeaponType = &WeaponType;
-		}
-	}
+	UPROPERTY()
+	UWeaponAmmoHandler* AmmoHandler;
+
+	void InitializeWeapon();
+	
 };

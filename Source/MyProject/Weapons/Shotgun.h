@@ -14,13 +14,6 @@ class MYPROJECT_API AShotgun : public AWeapon
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditDefaultsOnly)
-	int32 PelletsPerShot = 15;
 
-protected:
-	virtual void ShootBullet() override;
-
-private:
 	
 };

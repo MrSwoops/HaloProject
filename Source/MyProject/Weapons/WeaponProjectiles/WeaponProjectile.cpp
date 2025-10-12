@@ -1,20 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "WeaponProjectile.h"
 
-
-#include "Bullet.h"
-
-#include "Components/HurtBox.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
-#include "Interfaces/IDamageable.h"
-#include "Weapons/BulletData.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "MyProject/Components/HurtBox.h"
+#include "MyProject/Interfaces/IDamageable.h"
+#include "../WeaponData/ProjectileData.h"
 
-ABullet::ABullet() 
+
+AWeaponProjectile::AWeaponProjectile() 
 {
 	HitCollider = CreateDefaultSubobject<USphereComponent>(TEXT("HitCollider"));
 	HitCollider->InitSphereRadius(5.0f);
 	HitCollider->BodyInstance.SetCollisionProfileName("Projectile");
-	HitCollider->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
+	HitCollider->OnComponentHit.AddDynamic(this, &AWeaponProjectile::OnHit);
 
 	RootComponent = HitCollider;
 	
@@ -25,14 +23,14 @@ ABullet::ABullet()
 	Movement->bRotationFollowsVelocity = true;
 }
 
-void ABullet::BeginPlay()
+void AWeaponProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	// ...
 }
 
 
-void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AWeaponProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	ReturnToPool();
 	if (OtherComp && OtherActor)
@@ -41,12 +39,12 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 		{
 			if (UHurtBox* HurtBox = Cast<UHurtBox>(OtherComp))
 			{
-				if (BulletData.HasPenetration && HurtBox->HurtboxType != EHurtboxType::Head)
+				if (ProjectileData->HasPenetration && HurtBox->HurtboxType != EHurtboxType::Head)
 					ReturnToPool();
 				else
 					ReturnToPool();
 				
-				Damageable->TakeBulletDamage(BulletData, HurtBox->HurtboxType);
+				Damageable->TakeProjectileDamage(ProjectileData, HurtBox->HurtboxType);
 				// switch (HurtBox->HurtboxType)
 				// {
 				// case Head:
@@ -81,13 +79,17 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 	
 }
 
-void ABullet::FellOutOfWorld(const UDamageType& dmgType)
+void AWeaponProjectile::FellOutOfWorld(const UDamageType& dmgType)
 {
 	ReturnToPool();
 }
 
+const float  AWeaponProjectile::GetDamage()
+{
+	return (ProjectileData) ? ProjectileData->Damage : 0;
+}
 
-void ABullet::SetActive(bool i)
+void AWeaponProjectile::SetActive(bool i)
 {
 	Super::SetActive(i);
 	if (i)
@@ -103,22 +105,16 @@ void ABullet::SetActive(bool i)
 	}
 }
 
-const float& ABullet::GetDamage()
+void AWeaponProjectile::LoadProjectileData(UProjectileData* InBulletData)
 {
-	return Damage;
-}
-
-void ABullet::LoadBulletData(FBulletData InBulletData = BulletData::Default)
-{
-	Damage = InBulletData.Damage;
-	Movement->InitialSpeed = InBulletData.Speed;
-	Movement->MaxSpeed = InBulletData.Speed;
-	this->BulletData = InBulletData;
+	ProjectileData = InBulletData;
+	Movement->InitialSpeed = InBulletData->Speed;
+	Movement->MaxSpeed = InBulletData->Speed;
 }
 
 
 // Called every frame
-void ABullet::Tick(float DeltaTime)
+void AWeaponProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

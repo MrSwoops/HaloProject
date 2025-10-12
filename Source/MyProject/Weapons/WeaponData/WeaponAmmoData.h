@@ -31,6 +31,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Reload")
 	UFMODEvent* ReloadSoundEvent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Looting")
+	bool CanLootAmmo = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Looting")
+	UFMODEvent* LootAmmoSound;
+
 	UPROPERTY(BlueprintReadOnly)
 	TSubclassOf<UWeaponAmmoHandler> AmmoHandlerType;
 	

@@ -10,7 +10,7 @@ void UEnergyWeaponUIWidget::UpdateAmmoUI(const float& CurrentMagAmmo)
 	HeatLevelSlider->SetPercent(CurrentMagAmmo);
 }
 
-void UEnergyWeaponUIWidget::InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo)
+void UEnergyWeaponUIWidget::InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo, UWeaponUIData* UIData)
 {
 	AddToPlayerScreen();
 	UpdateAmmoUI(CurrentMagAmmo);

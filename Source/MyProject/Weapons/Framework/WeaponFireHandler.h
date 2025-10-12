@@ -1,12 +1,13 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-//#include "../Weapon.h"
-#include "GameFramework/Character.h"
-#include "MyProject/Components/BulletPoolManager.h"
-//#include "../../GameplayCharacter.h"
 #include "WeaponFireHandler.generated.h"
 
+struct FGameplayTag;
+class UBulletPoolManager;
+class UWeaponAmmoData;
+class UWeaponAmmoHandler;
+class UProjectileData;
 class UFMODEvent;
 class UWeaponFireData;
 class AWeapon;
@@ -18,14 +19,14 @@ class UWeaponFireHandler : public UObject
 	GENERATED_BODY()
 public:
 
-	virtual void Initialize(UWeaponFireData* FireData, UBulletPoolManager* BulletPoolManager);
+	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager);
 	
 	UFUNCTION(BlueprintCallable, Category = "Weapons|FireHandler")
 	virtual void FirePressed() { IsFireHeld = true; }
 	UFUNCTION(BlueprintCallable, Category = "Weapons|FireHandler")
 	virtual void FireReleased() { IsFireHeld = false; }
 	UFUNCTION(BlueprintCallable, Category = "Weapons|FireHandler")
-	virtual void FireHeld() {}
+	virtual void FireHeld(float DeltaTime) {}
 
 	bool IsFireHeld = false;
 
@@ -42,15 +43,19 @@ public:
 	UFMODEvent* FireSoundEvent;
 	UFMODEvent* DryFireSoundEvent;
 	UAnimMontage* FireAnimation;
-	
+
+	UWeaponAmmoHandler* AmmoHandler;
+	UProjectileData* ProjectileData;
 
 	void GetBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction);
 	void GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction);
 
 	virtual void FireBullet();
-	
-
 	FVector* AimPoint;
+
+protected:
+	bool IsReadyToFire();
+	void PlayFireAnimation();
 };
 
 UCLASS(BlueprintType)
@@ -58,7 +63,7 @@ class USingleFireHandler : public UWeaponFireHandler
 {
 	GENERATED_BODY()
 public:
-	virtual void Initialize(UWeaponFireData* FireData, UBulletPoolManager* BulletPoolManager) override;
+	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager) override;
 	
 	virtual void FirePressed() override;
 	
@@ -69,12 +74,13 @@ class UAutomaticFireHandler : public USingleFireHandler
 {
 	GENERATED_BODY()
 public:
-	virtual void FireHeld() override
+	virtual void FirePressed() override
+	{ IsFireHeld = true; }
+	virtual void FireHeld(float DeltaTime) override
 	{
-		if (!OnFireRateCD)
+		if (IsReadyToFire())
 		{
 			OnFireRateCD = true;
-			Super::FirePressed();
 			FireBullet();
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() { OnFireRateCD = false; }, FireRate, false);
@@ -88,11 +94,11 @@ class UBurstFireHandler : public UWeaponFireHandler
 {
 	GENERATED_BODY()
 public:
-	virtual void Initialize(UWeaponFireData* FireData, UBulletPoolManager* BulletPoolManager) override;
+	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager) override;
 
 	virtual void FirePressed() override
 	{
-		if (!OnFireRateCD)
+		if (IsReadyToFire())
 		{
 			OnFireRateCD = true;
 			CurrentBurstCount = 0;
@@ -126,7 +132,19 @@ class UChargeFireHandler : public UWeaponFireHandler
 {
 	GENERATED_BODY()
 public:
+	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager) override;
+	virtual void FirePressed() override;
+	virtual void FireHeld(float DeltaTime) override;
+	virtual void FireReleased() override;
+
+	UFMODEvent* ChargeSoundEvent;
 	
+	float MaxCharge;
+	float CurrentCharge = 0.0f;
+	float ChargeSpeed;
+
+	bool OnlyFireOnFullCharge;
+	bool AutoFireOnChargeCompletion;
 	
 };
 
@@ -135,38 +153,11 @@ class UPelletFireHandler : public UWeaponFireHandler
 {
 	GENERATED_BODY()
 public:
-	virtual void Initialize(UWeaponFireData* FireData, UBulletPoolManager* BulletPoolManager) override;
+	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager) override;
 
-	virtual void FireBullet() override
-	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			FVector Direction;
-			FVector SpawnLocation;
-			if (IsPlayerOwned)
-				GetPlayerBulletSpawnInfo(SpawnLocation, Direction);
-			else
-				GetBulletSpawnInfo(SpawnLocation, Direction);
-			
-			//if (bHit) DrawDebugLine(GetWorld(), SpawnLocation, HitResult.ImpactPoint, FColor::Green, false, 5.f, 0, 1.f); else DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + (Direction * 20000), FColor::Red, false, 5.f, 0, 1.f);
+	virtual void FirePressed() override;
 
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			FVector ForwardVector = Direction;//SpawnRotation.Vector(); // Converts rotation to direction vector
-			float ConeHalfAngleRad = FMath::DegreesToRadians(Spread); // Spread is an angle in radians. Convert degrees if needed:
-			for (int32 i = 0; i < PelletsPerShot; i++)
-			{
-				FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
-				FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
-			
-				BulletManager->SpawnBullet(SpawnLocation, SpreadRotation, *WeaponType);
-				//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
-			}
-		}
-	}
+	virtual void FireBullet() override;
 	
 	int32 PelletsPerShot;
 	

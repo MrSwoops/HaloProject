@@ -8,8 +8,7 @@
 #include "EnergyShieldShellSKM.h"
 #include "HurtBox.h"
 #include "../PlayerCharacter.h"
-#include "Components/AudioComponent.h"
-#include "../Weapons/BulletData.h"
+#include "MyProject/Weapons/WeaponData/ProjectileData.h"
 
 // Sets default values for this component's properties
 UEnergyShield::UEnergyShield()
@@ -103,12 +102,12 @@ int32 UEnergyShield::TakeDamage(const int32& IncomingDamage)
 	}
 	return RemainingDamage;
 }
-int32 UEnergyShield::TakeBulletDamage(const FBulletData& BulletData, const EHurtboxType& HitRegion)
+int32 UEnergyShield::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
 {
-	if (BulletData.Damage <= 0) return 0;
-	if (CurrentEnergy <= 0) return BulletData.Damage;
+	if (BulletData->Damage <= 0) return 0;
+	if (CurrentEnergy <= 0) return BulletData->Damage;
 
-	if (BulletData.CritHitBehavior & InstaKHeadShield && HitRegion == Head)
+	if (BulletData->CritHitBehavior & InstaKHeadShield && HitRegion == Head)
 	{
 		CurrentEnergy = 0;
 		return 100;
@@ -118,15 +117,15 @@ int32 UEnergyShield::TakeBulletDamage(const FBulletData& BulletData, const EHurt
 	ResetRegenDelay();
 	int32 RemainingDamage = 0;
 	
-	if (BulletData.Damage > CurrentEnergy)
+	if (BulletData->Damage > CurrentEnergy)
 	{
-		RemainingDamage = BulletData.Damage - CurrentEnergy;
+		RemainingDamage = BulletData->Damage - CurrentEnergy;
 		CurrentEnergy = 0;
 		if (ShieldMesh) ShieldMesh->SetShieldMaterials(true);
 	}
 	else
 	{
-		CurrentEnergy -= BulletData.Damage;
+		CurrentEnergy -= BulletData->Damage;
 	}
 	return RemainingDamage;
 }

@@ -4,7 +4,13 @@
 #include "GameplayTagContainer.h"
 #include "ProjectileData.generated.h"
 
-enum CritHitBehavior : uint16;
+UENUM(BlueprintType, meta = (Bitflags))
+enum CritHitBehavior : uint16
+{
+	Default = 0,
+	InstaKHeadHealth = 1,
+	InstaKHeadShield = 2,
+};
 
 UCLASS(Blueprintable)
 class MYPROJECT_API UProjectileData : public UDataAsset
@@ -39,7 +45,7 @@ public:
 };
 
 UCLASS(Blueprintable)
-class MYPROJECT_API UBulletData2 : public UProjectileData
+class MYPROJECT_API UBulletData : public UProjectileData
 {
 	GENERATED_BODY()
 public:

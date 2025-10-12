@@ -47,7 +47,7 @@ void AExplosiveBarrel::TakeDamage(const int32& Damage)
 	}
 }
 
-void AExplosiveBarrel::TakeBulletDamage(const FBulletData&, const EHurtboxType&)
+void AExplosiveBarrel::TakeProjectileDamage(const UProjectileData*, const EHurtboxType&)
 {
 	
 }

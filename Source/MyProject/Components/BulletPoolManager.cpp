@@ -4,17 +4,15 @@
 #include "BulletPoolManager.h"
 
 #include "ActorPool.h"
-#include "../Bullet.h"
-#include "../Weapons/BulletData.h"
-#include "../Weapons/Weapon.h"
-#include "../Weapons/Grenade.h"
+#include "MyProject/Weapons/WeaponProjectiles/Bullet.h"
+#include "MyProject/Weapons/Weapon.h"
+#include "MyProject/Weapons/Grenade.h"
+#include "MyProject/Weapons/WeaponData/ProjectileData.h"
 
 // Sets default values for this component's properties
 UBulletPoolManager::UBulletPoolManager()
 {
 	BulletPool = CreateDefaultSubobject<UActorPool>(TEXT("Default Bullet Pool"));
-	M90Pool = CreateDefaultSubobject<UActorPool>(TEXT("M90 Pool"));
-	M99Pool = CreateDefaultSubobject<UActorPool>(TEXT("M99 Pool"));
 	GrenadePool = CreateDefaultSubobject<UActorPool>(TEXT("Grenade Pool"));
 	RocketPool = CreateDefaultSubobject<UActorPool>(TEXT("Rocket Pool"));
 }
@@ -34,40 +32,26 @@ AGrenade* UBulletPoolManager::SpawnGrenade(const FVector& Location, const FRotat
 	return nullptr;
 }
 
-ABullet* UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator& Rotation, FGameplayTag WeaponType)
+AWeaponProjectile* UBulletPoolManager::SpawnBullet(const FVector& Location, const FRotator& Rotation, UProjectileData* ProjectileData)
 {
-	using namespace WeaponTags;
-	ABullet* OutBullet;
-	if (WeaponType == M90)
+	AWeaponProjectile* OutBullet = nullptr;
+	if (auto* BulletData = Cast<UBulletData>(ProjectileData))
 	{
-		OutBullet = Cast<ABullet>(M90Pool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::M90);
+		OutBullet = Cast<AWeaponProjectile>(BulletPool->SpawnFromLocationAndRotation(Location, Rotation, false));
 	}
-	else if (WeaponType == M99)
+	else if (auto* RocketData = Cast<URocketData>(ProjectileData))
 	{
-		OutBullet = Cast<ABullet>(M99Pool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::Default);
+		OutBullet = Cast<AWeaponProjectile>(RocketPool->SpawnFromLocationAndRotation(Location, Rotation, false));
 	}
-	else if (WeaponType == SP4NKR)
+	else if (auto* LaserData = Cast<ULaserData>(ProjectileData))
 	{
-		OutBullet = Cast<ABullet>(RocketPool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::SP4NKR);
+		OutBullet = Cast<AWeaponProjectile>(BulletPool->SpawnFromLocationAndRotation(Location, Rotation, false));
 	}
-	else if (WeaponType == BR55)
+
+	if (OutBullet)
 	{
-		OutBullet = Cast<ABullet>(BulletPool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::BR55);
+		OutBullet->LoadProjectileData(ProjectileData);
+		OutBullet->SetActive(true);
 	}
-	else if (WeaponType == SRS)
-	{
-		OutBullet = Cast<ABullet>(BulletPool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::SRS);
-	}
-	else
-	{
-		OutBullet = Cast<ABullet>(BulletPool->SpawnFromLocationAndRotation(Location, Rotation, false));
-		OutBullet->LoadBulletData(BulletData::Default);
-	}
-	OutBullet->SetActive(true);
 	return OutBullet;
 }

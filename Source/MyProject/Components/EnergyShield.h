@@ -7,6 +7,7 @@
 #include "EnergyShield.generated.h"
 
 
+class UProjectileData;
 class UFMODEvent;
 class UFMODAudioComponent;
 enum EHurtboxType : int;
@@ -64,6 +65,6 @@ public:
 	void EnableShieldComponent();
 
 	int32 TakeDamage(const int32& IncomingDamage);
-	int32 TakeBulletDamage(const FBulletData& BulletData, const EHurtboxType& HitRegion);
+	int32 TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion);
 		
 };

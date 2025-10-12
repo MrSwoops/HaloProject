@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "WeaponAmmoHandler.generated.h"
 
+class UWeaponUIData;
+class UWeaponUIWidget;
 class AWeapon;
 class UFMODAudioComponent;
 class UFMODEvent;
@@ -13,8 +15,8 @@ class UWeaponAmmoHandler : public UObject
 {
 	GENERATED_BODY()
 public:
-	ACharacter* WeaponOwner;
-	AWeapon* CharacterOwner;
+	ACharacter* CharacterOwner;
+	AWeapon* WeaponOwner;
 	
 	int32 MaxMagSize;
 	int32 MaxReserveMags;
@@ -32,17 +34,24 @@ public:
 	FTimerHandle ReloadTimerHandle;
 	UFMODAudioComponent* ReloadFMODInstance;
 
+	bool CanLootAmmo;
+	UFMODEvent* LootAmmoSound;
 	
-	virtual void OnShot()
-	{
-		CurrentMagAmmo--;
-	}
+	virtual void OnShot();
 
-	virtual bool CanShoot(){ return HasAmmo(); }
+	UWeaponUIWidget* WeaponUI;
+	UWeaponUIData* UIData;
+	virtual void AttachWeaponUI(UWeaponUIWidget* InWeaponUI);
+
+	bool LootWeapon(UWeaponAmmoHandler* LootedWeapon);
+
+	virtual bool CanShoot() { return HasAmmo(); }
 	bool HasAmmo() const { return CurrentMagAmmo > 0; }
+	bool IsEmpty() const { return CurrentMagAmmo <= 0 && CurrentReserveAmmo <= 0; }
 
 	//UPROPERTY(EditDefaultsOnly)
-	virtual void Initialize(UWeaponAmmoData* AmmoData);
+	virtual void Initialize(UWeaponAmmoData* AmmoData, UWeaponUIData* InUIData);
+	virtual void UpdateAmmoHandler(float DeltaTime) {}
 
 	virtual float GetCurrentMagPercent() {return static_cast<float>(CurrentMagAmmo) / static_cast<float>(MaxMagSize);}
 	
@@ -52,21 +61,32 @@ class UEnergyWeaponAmmoHandler : public UWeaponAmmoHandler
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Heating")
 	float MaxHeatLevel = 50.0f;
 	UPROPERTY()
 	float CurrentHeatLevel = 0.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Heating")
 	float HeatBuildupPerShot = 7.5f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Heating")
 	float HeatDissipationSpeed = 5.0f;
 
 	UPROPERTY()
 	bool IsOverHeated = false;
 
-	virtual void Initialize(UWeaponAmmoData* AmmoData) override;
+	virtual void Initialize(UWeaponAmmoData* AmmoData, UWeaponUIData* InUIData) override;
+	virtual void TriggerReload() override;
+
+	virtual void AttachWeaponUI(UWeaponUIWidget* InWeaponUI) override;
+
+	virtual void OnShot() override;
 	
 	virtual float GetCurrentMagPercent() override {return 1 - (CurrentHeatLevel / MaxHeatLevel);}
+
+	virtual void UpdateAmmoHandler(float DeltaTime) override;
+
+	virtual bool CanShoot() override { return Super::CanShoot() && !IsOverHeated; }
+	
+private:
+	void SetOverheated();
 	
 };

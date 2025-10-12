@@ -20,6 +20,9 @@
 #include "MyProject/PlayerCharacter.h"
 #include "FMODBlueprintStatics.h"
 #include "MyProject/GameModes/BaseGameMode.h"
+#include "WeaponData/WeaponAmmoData.h"
+#include "WeaponData/WeaponFireData.h"
+#include "WeaponUI/WeaponUIData.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -42,134 +45,22 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 	GameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	PickUpComp->AttachedWeapon = this;
-	CurrentMagAmmo = MaxMagSize;
 	PickUpComp->OnInteractDelegate.AddDynamic(this, &AWeapon::AttachWeapon);
-	CurrentReserveAmmo = (MaxReserveMags - 1) * MaxMagSize;
 	//SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
+
+	InitializeWeapon();
 }
 
-
-void AWeapon::Fire()
+void AWeapon::Tick(float DeltaSeconds)
 {
-	if (!Racked || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle) || Character == nullptr || Character->GetController() == nullptr)
-	{
-		return;
-	}
-	if (CurrentMagAmmo <= 0)
-	{
-		if (CurrentReserveAmmo <= 0)
-		{
-			FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-				GetWorld(), // Or a relevant UObject* from your current world context
-				DryFireSoundEvent,
-				GetActorTransform(),
-				true // bAutoPlay: true to start playing immediately
-			);
-			return;
-		}
-		Reload();
-		return;
-	}
-
-	ShootBullet();
-	
-	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-		GetWorld(), // Or a relevant UObject* from your current world context
-		FireSoundEvent,
-		GetActorTransform(),
-		true // bAutoPlay: true to start playing immediately
-	);
-	
-	if (IsPlayerOwned && FireAnimation != nullptr)
-	{
-		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() { Racked = true; }, FireRate, false);
-}
-
-void AWeapon::ShootBullet()
-{
-	// Try and fire a projectile
-	UWorld* const World = GetWorld();
-	if (World != nullptr)
-	{
-		Racked = false;
-		CurrentMagAmmo--;
-		if (WeaponUI) WeaponUI->UpdateAmmoUI(CurrentMagAmmo);
-		const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-		FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
-		
-		FVector Start = PlayerController->PlayerCameraManager->GetCameraLocation();
-		FVector End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 2000.f);
-		FHitResult HitResult;
-		FCollisionQueryParams CollisionParams;
-		CollisionParams.AddIgnoredActor(Character);
-		CollisionParams.AddIgnoredActor(this); // Optional: add actors to ignore from the trace, e.g., the actor performing the trace
-		DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 5.f, 0, 1.f);
-#define ECC_Hurtbox ECC_GameTraceChannel4
-		bool bHit = GetWorld()->LineTraceSingleByObjectType(
-			HitResult,
-			Start,
-			End,
-			FCollisionObjectQueryParams(ECC_Hurtbox), // Object channel(s) to hit
-			CollisionParams
-		);
-		FVector Direction = (bHit) ? (HitResult.ImpactPoint - SpawnLocation).GetSafeNormal() : SpawnRotation.Vector();
-		//if (bHit) DrawDebugLine(GetWorld(), SpawnLocation, HitResult.ImpactPoint, FColor::Green, false, 5.f, 0, 1.f); else DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + (Direction * 20000), FColor::Red, false, 5.f, 0, 1.f);
-
-		//Set Spawn Collision Handling Override
-		FActorSpawnParameters ActorSpawnParams;
-		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-		FVector ForwardVector = Direction;//SpawnRotation.Vector(); // Converts rotation to direction vector
-		float ConeHalfAngleRad = FMath::DegreesToRadians(Spread); // Spread is an angle in radians. Convert degrees if needed:
-		FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
-		FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
-		
-		GameMode->BulletPoolManager->SpawnBullet(SpawnLocation, SpreadRotation, WeaponType);
-		//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
-	}
+	Super::Tick(DeltaSeconds);
+	if (FireHandler && FireHandler->IsFireHeld) FireHandler->FireHeld(DeltaSeconds);
+	if (AmmoHandler) AmmoHandler->UpdateAmmoHandler(DeltaSeconds);
 }
 
 void AWeapon::Reload()
 {
-	if (CurrentMagAmmo == MaxMagSize || CurrentReserveAmmo <= 0) return;
-	if (ReloadAnimation != nullptr)
-	{
-		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
-		{
-			AnimInstance->Montage_Play(ReloadAnimation, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-		}
-	}
-	UFMODAudioComponent* FMODInstance = UFMODBlueprintStatics::PlayEventAttached(
-		ReloadSoundEvent,
-		GetRootComponent(),
-		"",
-		FVector::ZeroVector,
-		EAttachLocation::Type::SnapToTarget,
-		true,
-		true,
-		true
-	);
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeapon::ReloadMag, (ReloadAnimation) ? ReloadAnimation->GetPlayLength() : 1.0f, false);
-}
-void AWeapon::ReloadMag()
-{
-	int32 ammoNeeded = MaxMagSize - CurrentMagAmmo;
-	if (ammoNeeded > CurrentReserveAmmo) ammoNeeded = CurrentReserveAmmo;
-	CurrentReserveAmmo -= ammoNeeded;
-	CurrentMagAmmo += ammoNeeded;
-	if (WeaponUI)
-	{
-		WeaponUI->UpdateAmmoUI(CurrentMagAmmo);
-		WeaponUI->SetReserveText(CurrentReserveAmmo);
-	}
+	if (AmmoHandler != nullptr) AmmoHandler->TriggerReload();
 }
 
 void AWeapon::Melee()
@@ -193,6 +84,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	if (!TargetCharacter) return;
 	Character = TargetCharacter;
 	if (FireHandler) FireHandler->CharacterOwner = TargetCharacter;
+	if (AmmoHandler) AmmoHandler->CharacterOwner = TargetCharacter;
 
 	SkeletalMeshComp->SetEnableGravity(false);
 	SkeletalMeshComp->SetSimulatePhysics(false);
@@ -206,10 +98,10 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	{
 		IsPlayerOwned = true;
 		if (FireHandler) FireHandler->IsPlayerOwned = true;
-		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(PC->GetController()), WeaponUIClass);
-		if (WeaponUI)
+		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(PC->GetController()), UIData->WeaponUIClass);
+		if (AmmoHandler)
 		{
-			WeaponUI->InitializeWeaponUI(CurrentMagAmmo, MaxMagSize, CurrentReserveAmmo);
+			if (WeaponUI) AmmoHandler->AttachWeaponUI(WeaponUI);
 		}
 		AttachToComponent(PC->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
 		Cast<UFirstPersonAnimInstance>(PC->GetMesh1P()->GetAnimInstance())->HasRifle = true;
@@ -229,7 +121,12 @@ void AWeapon::DropWeapon()
 		FireHandler->CharacterOwner = nullptr;
 		FireHandler->IsPlayerOwned = false;
 	}
-	if (WeaponUI) WeaponUI->RemoveFromParent();
+	if (AmmoHandler) AmmoHandler->CharacterOwner = nullptr;
+	if (WeaponUI)
+	{
+		if (AmmoHandler) AmmoHandler->WeaponUI = nullptr;
+		WeaponUI->RemoveFromParent();
+	}
 	if (IsPlayerOwned)
 	{
 		if (auto* IC = Cast<UEnhancedInputComponent>(Character->GetController()))
@@ -239,7 +136,7 @@ void AWeapon::DropWeapon()
 	
 	Character = nullptr;
 	GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	if (CurrentReserveAmmo <= 0 && CurrentMagAmmo <= 0)
+	if (AmmoHandler == nullptr || AmmoHandler->IsEmpty())
 	{
 		this->Destroy();
 	}
@@ -254,38 +151,37 @@ void AWeapon::DropWeapon()
 
 void AWeapon::BindActions(UEnhancedInputComponent* InpComp)
 {
-	Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Triggered, this, &AWeapon::Fire));
+	//Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Triggered, this, &AWeapon::Fire));
+	// Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Started, this, &AWeapon::FirePressed));
+	// Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Completed, this, &AWeapon::FireReleased));
+	Bindings2.Add("FirePressedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Started, this, &AWeapon::FirePressed));
+	Bindings2.Add("FireReleasedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Completed, this, &AWeapon::FireReleased));
 }
 void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
 {
-	FEnhancedInputActionEventBinding** Temp = Bindings.Find(FireAction);
+	//FEnhancedInputActionEventBinding** Temp = Bindings.Find(FireAction);
+	//InpComp->RemoveBinding(*(*Temp));
+
+	FEnhancedInputActionEventBinding** Temp = Bindings2.Find("FirePressedAction");
+	InpComp->RemoveBinding(*(*Temp));
+	Temp = Bindings2.Find("FireReleasedAction");
 	InpComp->RemoveBinding(*(*Temp));
 
 	Bindings.Empty();
+	Bindings2.Empty();
 }
 
 void AWeapon::DisableWeapon()
 {
 	SkeletalMeshComp->SetVisibility(false);
 	if (IsPlayerOwned && WeaponUI) WeaponUI->SetVisibility(ESlateVisibility::Hidden);
-	GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	if (AmmoHandler) AmmoHandler->CancelReload();
 }
 
 void AWeapon::EnableWeapon()
 {
 	SkeletalMeshComp->SetVisibility(true);
-	if (IsPlayerOwned)
-	{
-		WeaponUI->SetVisibility(ESlateVisibility::Visible);
-	}
-}
-
-void AWeapon::UpdateReserveAmmoUI()
-{
-	if (WeaponUI)
-	{
-		WeaponUI->SetReserveText(CurrentReserveAmmo);
-	}
+	if (IsPlayerOwned && WeaponUI) WeaponUI->SetVisibility(ESlateVisibility::Visible);
 }
 
 bool AWeapon::IsSameWeaponType(AWeapon* OtherWeapon)
@@ -299,4 +195,35 @@ bool AWeapon::IsSameWeaponType(AWeapon* OtherWeapon)
 bool AWeapon::IsSameWeaponType(FGameplayTag TagToCheck)
 {
 	return TagToCheck == WeaponType;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void AWeapon::InitializeWeapon()
+{
+	if (AmmoData)
+	{
+		AmmoHandler = NewObject<UWeaponAmmoHandler>(this, AmmoData->AmmoHandlerType);
+		AmmoHandler->Initialize(AmmoData, UIData);
+		AmmoHandler->WeaponOwner = this;
+	}
+	if (FireData)
+	{
+		FireHandler = NewObject<UWeaponFireHandler>(this, FireData->FireHandlerType);
+		FireHandler->Initialize(FireData, AmmoHandler, ProjectileData, Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->BulletPoolManager);
+		FireHandler->WeaponOwner = this;
+		FireHandler->MuzzleOffset = &MuzzleOffset;
+		FireHandler->WeaponType = &WeaponType;
+	}
+}
+
+void AWeapon::FirePressed()
+{
+	if (FireHandler != nullptr) FireHandler->FirePressed();
+}
+
+void AWeapon::FireReleased()
+{
+	if (FireHandler != nullptr) FireHandler->FireReleased();
 }

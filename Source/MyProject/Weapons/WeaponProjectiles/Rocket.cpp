@@ -29,15 +29,6 @@ void ARocket::SetActive(bool i)
 	if (i)
 	{
 		PropelLoopSoundComponent->Play();
-		// UFMODBlueprintStatics::PlayEventAttached(
-		// 	,
-		// 	GetRootComponent(),
-		// 	"",
-		// 	FVector::ZeroVector,
-		// 	EAttachLocation::Type::SnapToTarget,
-		// 	true,
-		// 	true
-		// );
 	}
 	else
 	{

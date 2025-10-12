@@ -29,21 +29,21 @@ void UMyProjectPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* Overla
 	if (!Enabled) return;
 	if(AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
 	{
-		if (AttachedWeapon && ((Character->WeaponInventory->PrimaryWeapon && Character->WeaponInventory->PrimaryWeapon->IsSameWeaponType(AttachedWeapon)) ||
-			(Character->WeaponInventory->SecondaryWeapon && Character->WeaponInventory->SecondaryWeapon->IsSameWeaponType(AttachedWeapon)))) // Has Weapon
+		if (AttachedWeapon) // Has Weapon
 		{
-			// FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-			// 	GetWorld(), // Or a relevant UObject* from your current world context
-			// 	AttachedWeapon->ScavageSoundEvent,
-			// 	GetOwner()->GetActorTransform(),
-			// 	true // bAutoPlay: true to start playing immediately
-			// );
-			if (Character->WeaponInventory->ScavageWeapon(AttachedWeapon))
+			if ((Character->WeaponInventory->PrimaryWeapon && Character->WeaponInventory->PrimaryWeapon->IsSameWeaponType(AttachedWeapon)))
 			{
-				AttachedWeapon->Destroy();
+				if (Character->WeaponInventory->PrimaryWeapon->AmmoHandler->LootWeapon(AttachedWeapon->AmmoHandler)) AttachedWeapon->Destroy();
+				return;
+			}
+			if (Character->WeaponInventory->SecondaryWeapon && Character->WeaponInventory->SecondaryWeapon->IsSameWeaponType(AttachedWeapon))
+			{
+				if (Character->WeaponInventory->SecondaryWeapon->AmmoHandler->LootWeapon(AttachedWeapon->AmmoHandler)) AttachedWeapon->Destroy();
+				return;
 			}
 		}
-		else if (InteractOnAreaEnter)
+		
+		if (InteractOnAreaEnter)
 		{
 			OnInteract(Character);
 		}

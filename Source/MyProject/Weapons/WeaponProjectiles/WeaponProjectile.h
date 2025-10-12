@@ -1,28 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "PooledActor.h"
-#include "Interfaces/DamageDealer.h"
-#include "Weapons/BulletData.h"
-#include "Bullet.generated.h"
+#include "MyProject/PooledActor.h"
+#include "MyProject/Interfaces/DamageDealer.h"
+#include "WeaponProjectile.generated.h"
 
-
-class USphereComponent;
+class UProjectileData;
 class UProjectileMovementComponent;
+class USphereComponent;
 
 UCLASS()
-class MYPROJECT_API ABullet : public APooledActor, public IDamageDealer
+class MYPROJECT_API AWeaponProjectile : public APooledActor, public IDamageDealer
 {
 	GENERATED_BODY()
 
 public:
 
-	ABullet();
-
-	UPROPERTY(EditDefaultsOnly)
-	float Damage = 10;
+	AWeaponProjectile();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USphereComponent* HitCollider;
@@ -40,14 +34,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
 
-	FBulletData BulletData;
+	UPROPERTY()
+	UProjectileData* ProjectileData;
 	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual const float& GetDamage() override;
+	virtual const float GetDamage() override;
 
 	UFUNCTION()
-	void LoadBulletData(FBulletData InBulletData);
+	virtual void LoadProjectileData(UProjectileData* InBulletData);
 };

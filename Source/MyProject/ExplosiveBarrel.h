@@ -7,6 +7,7 @@
 #include "Interfaces/IDamageable.h"
 #include "ExplosiveBarrel.generated.h"
 
+class UProjectileData;
 class UExplosiveComponent;
 
 UCLASS()
@@ -28,9 +29,9 @@ public:
 	float Health = 0;
 	virtual void TakeDamage(IDamageDealer* DD) override;
 	virtual void TakeDamage(const int32& Damage) override;
-	virtual void TakeBulletDamage(const FBulletData&, const EHurtboxType&) override;
+	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) override;
 
-	virtual void Reset();
+	void Reset();
 
 protected:
 	// Called when the game starts or when spawned

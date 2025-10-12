@@ -3,16 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Bullet.h"
+#include "Bullet.h"
 #include "Rocket.generated.h"
 
+class UFMODEvent;
 class UFMODAudioComponent;
 class UExplosiveComponent;
 /**
  * 
  */
 UCLASS()
-class MYPROJECT_API ARocket : public ABullet
+class MYPROJECT_API ARocket : public AWeaponProjectile
 {
 	GENERATED_BODY()
 public:

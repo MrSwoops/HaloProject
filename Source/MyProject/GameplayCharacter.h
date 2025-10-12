@@ -7,6 +7,7 @@
 #include "Interfaces/IDamageable.h"
 #include "GameplayCharacter.generated.h"
 
+class UProjectileData;
 class UAIPerceptionStimuliSourceComponent;
 class UEnergyShieldShellSKM;
 class UEnergyShield;
@@ -96,7 +97,7 @@ public:
 	float MaxHealth = 45;
 	virtual void TakeDamage(IDamageDealer*) override;
 	virtual void TakeDamage(const int32&) override;
-	virtual void TakeBulletDamage(const FBulletData&, const EHurtboxType&) override;
+	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) override;
 
 	UCharacterInteractableComponent* CurrentInteraction = nullptr;
 	TArray<UCharacterInteractableComponent*> Interactables;

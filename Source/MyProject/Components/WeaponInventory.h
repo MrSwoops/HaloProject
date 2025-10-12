@@ -44,7 +44,6 @@ public:
 	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
 	bool ScavageWeapon(AWeapon* Weapon);
-	bool FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int32 CurrentGrenade = 0;

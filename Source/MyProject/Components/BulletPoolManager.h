@@ -7,6 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "BulletPoolManager.generated.h"
 
+class AWeaponProjectile;
+class UProjectileData;
 class ABullet;
 struct FGameplayTag;
 class AWeapon;
@@ -38,7 +40,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UActorPool* RocketPool;
 
-	ABullet* SpawnBullet(const FVector& Location, const FRotator& Rotation, FGameplayTag WeaponType);
+	AWeaponProjectile* SpawnBullet(const FVector& Location, const FRotator& Rotation, UProjectileData* ProjectileData);
 
 	AGrenade* SpawnGrenade(const FVector& Location, const FRotator& Rotation, const int32 NadeType);
 

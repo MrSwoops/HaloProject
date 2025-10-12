@@ -5,6 +5,7 @@
 
 #include "Components/UniformGridSlot.h"
 #include "Components/PanelWidget.h"
+#include "MyProject/Weapons/WeaponUI/WeaponUIData.h"
 
 void UWeaponUIWidget::SetMagAmmo(const int32& MagSize)
 {
@@ -49,8 +50,16 @@ void UWeaponUIWidget::UpdateAmmoUI(const int32& CurrentMagAmmo)
 	}
 }
 
-void UWeaponUIWidget::InitializeWeaponUI(const int32& CurrentMagAmmo, const int32& MaxMagSize, const int32& CurrentReserveAmmo)
+void UWeaponUIWidget::InitializeWeaponUI(const int32& CurrentMagAmmo, const int32& MaxMagSize, const int32& CurrentReserveAmmo, UWeaponUIData* UIData)
 {
+	if (UIData)
+	{
+		WeaponImage->SetBrushFromTexture(UIData->WeaponImage, true);
+		BulletImage = UIData->AmmoImage;
+		WeaponReticle->SetBrushFromTexture(UIData->ReticleImage, true);
+		BulletRows = UIData->MagAmmoRows;
+	}
+	
 	AddToPlayerScreen();
 	SetReserveText(CurrentReserveAmmo);
 	SetMagAmmo(MaxMagSize);

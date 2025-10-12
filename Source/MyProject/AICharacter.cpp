@@ -41,7 +41,7 @@ void AAICharacter::SetConfidence()
 		ConfidenceLevel *= GetHealthPercent();
 		if (auto* Weapon = WeaponInventory->CurrentWeapon)
 		{
-			ConfidenceLevel *= Weapon->GetCurrentMagPercent();
+			ConfidenceLevel *= Weapon->AmmoHandler->GetCurrentMagPercent();
 		}
 		
 		FName KeyName = TEXT("Confidence");

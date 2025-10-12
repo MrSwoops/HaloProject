@@ -14,19 +14,19 @@ class MYPROJECT_API ABurstWeapon : public AWeapon
 {
 	GENERATED_BODY()
 
-public:
-
-	UPROPERTY(EditDefaultsOnly)
-	float BurstRate = 0.1f;
-
-	UPROPERTY(EditDefaultsOnly)
-	int32 BurstShots = 3.0f;
-
-	virtual void Fire() override;
-
-protected:
-	virtual void ShootBullet() override;
-
-private:
-	int32 CurrentBurst = 0;
+// public:
+//
+// 	UPROPERTY(EditDefaultsOnly)
+// 	float BurstRate = 0.1f;
+//
+// 	UPROPERTY(EditDefaultsOnly)
+// 	int32 BurstShots = 3.0f;
+//
+// 	virtual void Fire() override;
+//
+// protected:
+// 	virtual void ShootBullet() override;
+//
+// private:
+// 	int32 CurrentBurst = 0;
 };

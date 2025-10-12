@@ -34,6 +34,30 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+class MYPROJECT_API USingleFireData : public UWeaponFireData
+{
+	GENERATED_BODY()
+public:
+	USingleFireData()
+	{
+		FireHandlerType = USingleFireHandler::StaticClass();
+	}
+	
+};
+
+UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+class MYPROJECT_API UAutomaticFireData : public UWeaponFireData
+{
+	GENERATED_BODY()
+public:
+	UAutomaticFireData()
+	{
+		FireHandlerType = UAutomaticFireHandler::StaticClass();
+	}
+	
+};
+
+UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
 class MYPROJECT_API UBurstWeaponFireData : public UWeaponFireData
 {
 	GENERATED_BODY()
@@ -66,5 +90,31 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 PelletsPerShots;
+	
+};
+
+UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+class MYPROJECT_API UChargeWeaponFireData : public UWeaponFireData
+{
+	GENERATED_BODY()
+public:
+	UChargeWeaponFireData()
+		: MaxCharge(1.0f), ChargeSpeed(0.2f), OnlyFireOnFullCharge(false), AutoFireOnChargeCompletion(false)
+	{
+		FireHandlerType = UChargeFireHandler::StaticClass();
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxCharge;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ChargeSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool OnlyFireOnFullCharge;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool AutoFireOnChargeCompletion;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UFMODEvent* ChargeSoundEvent;
 	
 };

@@ -51,7 +51,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 75.0f;
 	UFUNCTION(BlueprintCallable)
-	virtual const float& GetDamage() override { return Damage;}
+	virtual const float GetDamage() override { return Damage;}
 	
 protected:
 	// Called when the game starts or when spawned

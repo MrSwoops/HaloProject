@@ -15,6 +15,6 @@ class MYPROJECT_API AAutomaticWeapon : public AWeapon
 	GENERATED_BODY()
 
 public:
-	virtual void FireHeld() override;
+	//virtual void FireHeld() override;
 	
 };

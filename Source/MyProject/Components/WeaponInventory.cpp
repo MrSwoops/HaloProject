@@ -186,50 +186,13 @@ bool UWeaponInventory::ScavageWeapon(AWeapon* Weapon)
 {
 	if (Weapon->IsSameWeaponType(PrimaryWeapon))
 	{
-		return FillWeapon(Weapon, PrimaryWeapon);
+		//return FillWeapon(Weapon, PrimaryWeapon);
 	}
 	else
 	{
-		return FillWeapon(Weapon, SecondaryWeapon);
+		//return FillWeapon(Weapon, SecondaryWeapon);
 	}
-}
-
-bool UWeaponInventory::FillWeapon(AWeapon* LootedWeapon, AWeapon* FillWeapon)
-{
-	int32 AmmoNeeded = FillWeapon->MaxReserveMags * FillWeapon->MaxMagSize - FillWeapon->CurrentReserveAmmo;
-	if (AmmoNeeded <= 0) return false;
-	int32 AmmoAvailable = LootedWeapon->CurrentReserveAmmo + LootedWeapon->CurrentMagAmmo;
-
-	FFMODEventInstance FMInstance = UFMODBlueprintStatics::PlayEvent2D(
-		GetWorld(),
-		LootedWeapon->ScavageSoundEvent,
-		true
-	);
-	// FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-	// 	GetWorld(), // Or a relevant UObject* from your current world context
-	// 	LootedWeapon->ScavageSoundEvent,
-	// 	GetActorTransform(),
-	// 	true // bAutoPlay: true to start playing immediately
-	// );
-	
-	if (AmmoAvailable <= AmmoNeeded) // Take all ammo and delete looted gun
-	{
-		FillWeapon->CurrentReserveAmmo += AmmoAvailable;
-		FillWeapon->UpdateReserveAmmoUI();
-		return true;
-	}
-	else // Take needed ammo
-	{
-		FillWeapon->CurrentReserveAmmo += AmmoNeeded;
-		LootedWeapon->CurrentReserveAmmo -= AmmoNeeded;
-		if (LootedWeapon->CurrentReserveAmmo < 0)
-		{
-			LootedWeapon->CurrentMagAmmo += LootedWeapon->CurrentReserveAmmo;
-			LootedWeapon->CurrentReserveAmmo = 0;
-		}
-		FillWeapon->UpdateReserveAmmoUI();
-		return false;
-	}
+	return false;
 }
 
 
