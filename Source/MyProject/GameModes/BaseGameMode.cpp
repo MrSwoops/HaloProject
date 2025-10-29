@@ -9,6 +9,8 @@
 #include "MyProject/AICharacter.h"
 #include "MyProject/PlayerCharacter.h"
 #include "MyProject/Components/BulletPoolManager.h"
+#include "MyProject/EventSystem/EventDefinitions.h"
+#include "MyProject/EventSystem/GlobalEventManager.h"
 
 ABaseGameMode::ABaseGameMode() 
 {
@@ -18,10 +20,36 @@ ABaseGameMode::ABaseGameMode()
 void ABaseGameMode::BeginPlay()
 {
 	//TArray<AActor*> SpawnPoints;
-	FName TagToFind = "SpawnPoint";
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TagToFind, SpawnPoints);
+	FName SpawnPointTag = "SpawnPoint";
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnPointTag, SpawnPoints);
 	AssignCharacterTags();
+
+	GlobalEventManager::FGlobalEventManager::Subscribe<ABaseGameMode, GlobalEventManager::FPlayerKilledMessage>(
+	this,
+	[this](const GlobalEventManager::FPlayerKilledMessage& Msg)
+	{
+		HandlePlayerDeath(Msg);
+	},
+	false,  // onlyTriggerIfActive
+	false);   // triggerOnce
 }
+
+void ABaseGameMode::HandlePlayerDeath(const GlobalEventManager::FPlayerKilledMessage& Msg)
+{
+	//(Msg.Killer->Team == Msg.Victim->Team) ? " betrayed " : " killed "
+	FString S = Msg.Killer->CharacterName + " killed " + Msg.Victim->CharacterName;
+	FText T = FText::FromString(S);//(TEXT("%s received kill event: %s killed %s"), *GetName(), Msg.KillerName, Msg.VictimName));
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,                  // Key: Unique ID for the message (-1 for a new message)
+			5.0f,                // TimeToDisplay: Duration in seconds to display the message
+			FColor::Yellow,      // DisplayColor: Color of the text
+			S // DebugMessage: The string to display
+		);
+	}
+}
+
 
 void ABaseGameMode::AssignCharacterTags()
 {

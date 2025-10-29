@@ -2,9 +2,10 @@
 
 #include "FMODBlueprintStatics.h"
 #include "WeaponAmmoHandler.h"
+#include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/PlayerCharacter.h"
 #include "MyProject/Components/BulletPoolManager.h"
-#include "MyProject/Weapons/WeaponData/WeaponAmmoData.h"
+#include "MyProject/Weapons/Weapon.h"
 #include "MyProject/Weapons/WeaponData/WeaponFireData.h"
 
 void UWeaponFireHandler::Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager)
@@ -38,27 +39,21 @@ void UWeaponFireHandler::PlayFireAnimation()
 	}
 }
 
-
 void UWeaponFireHandler::GetBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction)
 {
-	
-}
+	FVector Start;
+	FVector End;
+	FRotator LookRotation;
+	if (IsPlayerOwned)
+		GetPlayerBulletSpawnInfo(SpawnLocation, LookRotation, Start, End);
+	else
+		GetAIBulletSpawnInfo(SpawnLocation, LookRotation, Start, End);
 
-
-void UWeaponFireHandler::GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction)
-{
-	const APlayerController* PlayerController = Cast<APlayerController>(CharacterOwner->GetController());
-	FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-	SpawnLocation = CharacterOwner->GetActorLocation() + SpawnRotation.RotateVector(*MuzzleOffset);
-
-	// Cast ray to get more accurate direction
-	FVector Start = PlayerController->PlayerCameraManager->GetCameraLocation();
-	FVector End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 2000.f);
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(CharacterOwner);
 	CollisionParams.AddIgnoredActor(WeaponOwner);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 5.f, 0, 1.f);
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 5.f, 0, 1.f);
 #define ECC_Hurtbox ECC_GameTraceChannel4
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(
 		HitResult,
@@ -67,7 +62,27 @@ void UWeaponFireHandler::GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FVecto
 		FCollisionObjectQueryParams(ECC_Hurtbox), // Object channel(s) to hit
 		CollisionParams
 	);
-	Direction = (bHit) ? (HitResult.ImpactPoint - SpawnLocation).GetSafeNormal() : SpawnRotation.Vector();
+	Direction = (bHit) ? (HitResult.ImpactPoint - SpawnLocation).GetSafeNormal() : LookRotation.Vector();
+}
+
+void UWeaponFireHandler::GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FRotator& LookRotation, FVector& Start, FVector& End)
+{
+	const APlayerController* PlayerController = Cast<APlayerController>(CharacterOwner->GetController());
+	LookRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	SpawnLocation = Cast<AWeapon>(WeaponOwner)->GunMuzzle->GetComponentLocation();//WeaponOwner->GetActorLocation() + LookRotation.RotateVector(*MuzzleOffset);
+
+	Start = PlayerController->PlayerCameraManager->GetCameraLocation();
+	End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 2000.f);
+}
+
+void UWeaponFireHandler::GetAIBulletSpawnInfo(FVector& SpawnLocation, FRotator& LookRotation, FVector& Start, FVector& End)
+{
+	const auto* AnimInstance = Cast<UCharacterAnimInstance>(CharacterOwner->GetMesh()->GetAnimInstance());
+	LookRotation = FRotationMatrix::MakeFromX((AnimInstance->GetLookRigLocation() - WeaponOwner->GetActorLocation()).GetSafeNormal()).Rotator();
+	SpawnLocation = Cast<AWeapon>(WeaponOwner)->GunMuzzle->GetComponentLocation();//WeaponOwner->GetActorLocation() + LookRotation.RotateVector(*MuzzleOffset);
+
+	Start = CharacterOwner->GetActorLocation();
+	End = AnimInstance->GetLookRigLocation();
 }
 
 
@@ -79,10 +94,8 @@ void UWeaponFireHandler::FireBullet()
 		{
 			FVector Direction;
 			FVector SpawnLocation;
-			if (IsPlayerOwned)
-				GetPlayerBulletSpawnInfo(SpawnLocation, Direction);
-			else
-				GetBulletSpawnInfo(SpawnLocation, Direction);
+			
+			GetBulletSpawnInfo(SpawnLocation, Direction);
 			
 			//if (bHit) DrawDebugLine(GetWorld(), SpawnLocation, HitResult.ImpactPoint, FColor::Green, false, 5.f, 0, 1.f); else DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + (Direction * 20000), FColor::Red, false, 5.f, 0, 1.f);
 
@@ -167,10 +180,7 @@ void UPelletFireHandler::FireBullet()
 	{
 		FVector Direction;
 		FVector SpawnLocation;
-		if (IsPlayerOwned)
-			GetPlayerBulletSpawnInfo(SpawnLocation, Direction);
-		else
-			GetBulletSpawnInfo(SpawnLocation, Direction);
+		GetBulletSpawnInfo(SpawnLocation, Direction);
 			
 		//if (bHit) DrawDebugLine(GetWorld(), SpawnLocation, HitResult.ImpactPoint, FColor::Green, false, 5.f, 0, 1.f); else DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + (Direction * 20000), FColor::Red, false, 5.f, 0, 1.f);
 

@@ -60,15 +60,35 @@ public:
 	virtual void Die();
 	UFUNCTION(BlueprintCallable)
 	virtual void Respawn(const FVector& Location, const FRotator& Rotation);
+
+	UPROPERTY(EditDefaultsOnly)
+	FString CharacterName;
+	UPROPERTY(EditDefaultsOnly)
+	int32 Team;
 	
 	bool IsDead = false;
-	
-#pragma region Weapons
-public:
 
+#pragma region Combat
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual void EnterCombat(); 
+	UFUNCTION(BlueprintCallable)
+	virtual void StartExitCombatTimer(bool OverwriteCurrent = true);
+	UFUNCTION(BlueprintCallable)
+	virtual void ExitCombat() {IsInCombat = false;}
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsInCombat = false;
+protected:
+	float ExitCombatTime = 10.0f;
+	FTimerHandle ExitCombatTimer;
+#pragma endregion Combat
+
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAIPerceptionStimuliSourceComponent* AIPerceptionStimuli;
 	
+#pragma region Weapons
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWeaponInventory* WeaponInventory;
 	
@@ -81,7 +101,7 @@ public:
 
 #pragma endregion Weapons
 
-
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UEnergyShieldShellSKM* EnergyShieldShell;
 	
@@ -91,6 +111,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	float Health = 0;
 
+	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent();
 	
 	UPROPERTY(EditAnywhere)
@@ -121,8 +142,10 @@ protected:
 	float RotationSpeed = 5.0f;
 	bool bShouldRotateToCamera = false;
 
-	virtual void Crouch();
-	virtual void UnCrouch();
+	UFUNCTION(BlueprintCallable)
+	virtual void CharacterCrouch();
+	UFUNCTION(BlueprintCallable)
+	virtual void CharacterUnCrouch();
 
 	UFUNCTION()
 	virtual void TryInteract();
@@ -136,6 +159,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
-	
-	
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	bool IsUnderFire;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool UnderFireTime;
+private:
+	FTimerHandle UnderFireTimer;
 };

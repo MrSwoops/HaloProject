@@ -3,6 +3,7 @@
 
 #include "GameplayCharacter.h"
 
+#include "CharacterAnimInstance.h"
 #include "Components/CharacterInteractableComponent.h"
 #include "Components/EnergyShield.h"
 #include "Components/EnergyShieldShellSKM.h"
@@ -12,10 +13,13 @@
 #include "EnhancedInputComponent.h"
 #include "Components/HurtBox.h"
 #include "InputActionValue.h"
+#include "PlayerCharacter.h"
 #include "Engine/LocalPlayer.h"
 #include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
 #include "Components/WeaponInventory.h"
+#include "EventSystem/EventDefinitions.h"
+#include "EventSystem/GlobalEventManager.h"
 #include "GameModes/BaseGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -118,14 +122,16 @@ void AGameplayCharacter::SetRagdoll(bool Active)
 	}
 }
 
-void AGameplayCharacter::Crouch()
+void AGameplayCharacter::CharacterCrouch()
 {
 	ACharacter::Crouch(false);
+	Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->IsCrouching = true;
 }
 
-void AGameplayCharacter::UnCrouch()
+void AGameplayCharacter::CharacterUnCrouch()
 {
 	ACharacter::UnCrouch(false);
+	Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->IsCrouching = false;
 }
 
 void AGameplayCharacter::FellOutOfWorld(const class UDamageType& dmgType)
@@ -142,6 +148,10 @@ void AGameplayCharacter::Die()
 	if (EnergyShield) EnergyShield->DisableShieldComponent();
 	SetRagdoll(true);
 	Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->RespawnCharacter(this);
+
+	using namespace GlobalEventManager;
+	const FPlayerKilledMessage Msg = FPlayerKilledMessage(this, this);
+	FGlobalEventManager::RaiseEvent(Msg);
 }
 
 
@@ -155,7 +165,13 @@ void AGameplayCharacter::TakeDamage(const int32& Damage)
 		Health -= EnergyShield->TakeDamage(Damage);
 	else
 		Health -= Damage;
-	if (Health <= 0 && !IsDead) Die();
+	if (Health <= 0 && !IsDead) { Die(); return; }
+	
+	// Mark the player as under fire
+	IsUnderFire = true;
+	FTimerManager* TManager = &GetWorld()->GetTimerManager();
+	if (TManager->IsTimerActive(UnderFireTimer)) TManager->ClearTimer(UnderFireTimer);
+	TManager->SetTimer(UnderFireTimer, [this]() { IsUnderFire = false; }, UnderFireTime, false);
 }
 void AGameplayCharacter::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
 {
@@ -244,7 +260,7 @@ void AGameplayCharacter::SwapWeapons()
 
 void AGameplayCharacter::PickUpWeapon(AWeapon* Weapon)
 {
-	if (GetController())
+	if (Cast<APlayerCharacter>(this))
 	{
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(GetController()->InputComponent))
 			WeaponInventory->PickUpWeapon(EnhancedInputComponent, Weapon);
@@ -322,4 +338,25 @@ void AGameplayCharacter::Look(const FInputActionValue& Value)
 		DesiredRotation = FRotator(0.f, NewYaw, 0.f);
 		bShouldRotateToCamera = true;
 	}
+}
+
+void AGameplayCharacter::EnterCombat()
+{
+	IsInCombat = true;
+	if (auto* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ExitCombatTimer);
+	}
+}
+
+
+void AGameplayCharacter::StartExitCombatTimer(bool OverwriteCurrent)
+{
+	auto& TimerManager = GetWorld()->GetTimerManager();
+	if (TimerManager.IsTimerActive(ExitCombatTimer))
+	{
+		if (!OverwriteCurrent) return;
+		TimerManager.ClearTimer(ExitCombatTimer);
+	}
+	TimerManager.SetTimer(ExitCombatTimer, this, &AGameplayCharacter::ExitCombat, ExitCombatTime, false);
 }

@@ -30,20 +30,21 @@ void AAICharacterController::BeginPlay()
 
 void AAICharacterController::UpdateConfidence()
 {
-	float ConfidenceLevel = 1; // Ranged from 0 to 1; 1 is giga chad and 0 is pants pisser
+	float ConfidenceLevel = 1; // Ranged from 0 to 1; 1 is giga chad, 0 is pants pisser
 	if (AGameplayCharacter* GCharacter = Cast<AGameplayCharacter>(GetOwner()))
 	{
-		ConfidenceLevel *= GCharacter->GetHealthPercent();
+		ConfidenceLevel *= FMath::Pow(GCharacter->GetHealthPercent(), HealthWeight);
+		
 		if (auto* Weapon = GCharacter->WeaponInventory->CurrentWeapon)
 		{
-			ConfidenceLevel *= Weapon->AmmoHandler->GetCurrentMagPercent();// 
+			ConfidenceLevel *= FMath::Pow(Weapon->AmmoHandler->GetCurrentMagPercent(), AmmoWeight); 
 		}
 	}
 	FName KeyName = TEXT("Confidence");
 	UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
 	BlackboardComp->SetValueAsFloat(KeyName, ConfidenceLevel);
 }
-
+// ConfidenceLevel = 1 * (HealthPercent^HealthWeight * AmmoPercent^AmmoWeight * TargetDistancePercent^DistanceWeight);
 
 void AAICharacterController::RandomMovePoint()
 {

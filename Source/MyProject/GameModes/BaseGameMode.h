@@ -6,12 +6,19 @@
 #include "GameFramework/GameModeBase.h"
 #include "BaseGameMode.generated.h"
 
+namespace GlobalEventManager
+{
+	struct FPlayerKilledMessage;
+}
+
+class URespawnHandler;
 class AGameplayCharacter;
 class APlayerCharacter;
 class UBulletPoolManager;
 /**
  * 
  */
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE
 UCLASS()
 class MYPROJECT_API ABaseGameMode : public AGameModeBase
 {
@@ -24,6 +31,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UBulletPoolManager* BulletPoolManager;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	URespawnHandler* RespawnHandler;
 	
 	UPROPERTY()
 	float RespawnTime = 5.0f;
@@ -37,5 +46,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void AssignCharacterTags();
+
+	virtual void HandlePlayerDeath(const GlobalEventManager::FPlayerKilledMessage& Msg);
 	
 };

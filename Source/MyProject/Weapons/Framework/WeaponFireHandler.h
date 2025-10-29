@@ -47,9 +47,13 @@ public:
 	UWeaponAmmoHandler* AmmoHandler;
 	UProjectileData* ProjectileData;
 
+protected:
 	void GetBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction);
-	void GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FVector& Direction);
-
+private:
+	void GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FRotator& LookRotation, FVector& Start, FVector& End);
+	void GetAIBulletSpawnInfo(FVector& SpawnLocation, FRotator& LookRotation, FVector& Start, FVector& End);
+	
+public:
 	virtual void FireBullet();
 	FVector* AimPoint;
 

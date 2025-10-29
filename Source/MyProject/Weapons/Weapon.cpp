@@ -32,6 +32,9 @@ AWeapon::AWeapon()
 	SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSkeleMesh"));
 	SkeletalMeshComp->SetSimulatePhysics(true);
 	SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
+	
+	GunMuzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Gun Muzzle"));
+	GunMuzzle->SetupAttachment(SkeletalMeshComp);
 
 	RootComponent = SkeletalMeshComp;
 
@@ -151,23 +154,16 @@ void AWeapon::DropWeapon()
 
 void AWeapon::BindActions(UEnhancedInputComponent* InpComp)
 {
-	//Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Triggered, this, &AWeapon::Fire));
-	// Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Started, this, &AWeapon::FirePressed));
-	// Bindings.Add(FireAction, &InpComp->BindAction(FireAction, ETriggerEvent::Completed, this, &AWeapon::FireReleased));
 	Bindings2.Add("FirePressedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Started, this, &AWeapon::FirePressed));
 	Bindings2.Add("FireReleasedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Completed, this, &AWeapon::FireReleased));
 }
 void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
 {
-	//FEnhancedInputActionEventBinding** Temp = Bindings.Find(FireAction);
-	//InpComp->RemoveBinding(*(*Temp));
-
 	FEnhancedInputActionEventBinding** Temp = Bindings2.Find("FirePressedAction");
 	InpComp->RemoveBinding(*(*Temp));
 	Temp = Bindings2.Find("FireReleasedAction");
 	InpComp->RemoveBinding(*(*Temp));
 
-	Bindings.Empty();
 	Bindings2.Empty();
 }
 
@@ -220,7 +216,10 @@ void AWeapon::InitializeWeapon()
 
 void AWeapon::FirePressed()
 {
-	if (FireHandler != nullptr) FireHandler->FirePressed();
+	if (FireHandler != nullptr)
+	{
+		FireHandler->FirePressed();
+	}
 }
 
 void AWeapon::FireReleased()

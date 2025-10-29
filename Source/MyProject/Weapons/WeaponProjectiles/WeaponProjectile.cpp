@@ -1,5 +1,8 @@
 ﻿#include "WeaponProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "MyProject/Components/HurtBox.h"
@@ -21,6 +24,9 @@ AWeaponProjectile::AWeaponProjectile()
 	Movement->InitialSpeed = 3000.f;
 	Movement->MaxSpeed = 3000.f;
 	Movement->bRotationFollowsVelocity = true;
+
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+	NiagaraComponent->SetupAttachment(RootComponent);
 }
 
 void AWeaponProjectile::BeginPlay()
@@ -89,6 +95,24 @@ const float  AWeaponProjectile::GetDamage()
 	return (ProjectileData) ? ProjectileData->Damage : 0;
 }
 
+void AWeaponProjectile::EnableBulletTrail()
+{
+	if (BulletTrailSystem && NiagaraComponent)
+	{
+		NiagaraComponent->SetAsset(BulletTrailSystem); 
+		NiagaraComponent->Activate(); 
+	}
+}
+
+void AWeaponProjectile::DisableBulletTrail()
+{
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+	}
+}
+
+
 void AWeaponProjectile::SetActive(bool i)
 {
 	Super::SetActive(i);
@@ -97,11 +121,11 @@ void AWeaponProjectile::SetActive(bool i)
 		Movement->Activate(true);
 		Movement->SetUpdatedComponent(RootComponent);
 		Movement->SetVelocityInLocalSpace(FVector().ForwardVector * Movement->InitialSpeed);
-		//Movement->BeginPlay();
+		EnableBulletTrail();
 	}
 	else
 	{
-		//Movement->Deactivate();
+		DisableBulletTrail();
 	}
 }
 

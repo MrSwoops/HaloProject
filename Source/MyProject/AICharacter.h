@@ -6,6 +6,7 @@
 #include "GameplayCharacter.h"
 #include "AICharacter.generated.h"
 
+enum class ELookRigBehaviour : uint8;
 /**
  * 
  */
@@ -20,8 +21,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AIMove(const FVector2D& Value);
+
 	UFUNCTION(BlueprintCallable)
-	void LookAtPoint(const FVector& TargetPoint, bool bUsePitch);
+	bool TryFireWeapon(float HoldTime = -1);
 	
 	void MoveToRandomPoint();
 
@@ -29,5 +31,17 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+	virtual void Tick(float DeltaTime) override;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void LookAtPoint(const FVector& TargetPoint, bool bUsePitch);
+	UFUNCTION(BlueprintCallable)
+	void LookAtActor(AActor* TargetActor, bool bUsePitch);
+private:
+	void UpdateCharacterLookRotation();
+	bool UsePitch = false;
+	ELookRigBehaviour* LookRigBehavior;
+	FVector CachedTargetPoint;
+	AActor* CachedTargetActor;
 };

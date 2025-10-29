@@ -25,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	AWeapon* CurrentWeapon = nullptr;
 	UPROPERTY()
 	AWeapon* PrimaryWeapon = nullptr;

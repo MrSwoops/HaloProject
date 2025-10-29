@@ -47,6 +47,7 @@ public:
 	virtual bool PickUpGrenade(AGrenade* Grenade) override;
 
 	virtual void TakeDamage(const int32& Damage) override;
+	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) override;
 
 	virtual void AddInteractable(UCharacterInteractableComponent* Interactable) override;
 	virtual void RemoveInteractable(UCharacterInteractableComponent* Interactable) override;

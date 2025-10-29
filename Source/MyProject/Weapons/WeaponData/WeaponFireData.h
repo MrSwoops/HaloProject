@@ -33,7 +33,7 @@ public:
 	
 };
 
-UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+UCLASS(Blueprintable, BlueprintType)
 class MYPROJECT_API USingleFireData : public UWeaponFireData
 {
 	GENERATED_BODY()
@@ -45,7 +45,7 @@ public:
 	
 };
 
-UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+UCLASS(Blueprintable, BlueprintType)
 class MYPROJECT_API UAutomaticFireData : public UWeaponFireData
 {
 	GENERATED_BODY()
@@ -57,7 +57,7 @@ public:
 	
 };
 
-UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+UCLASS(Blueprintable, BlueprintType)
 class MYPROJECT_API UBurstWeaponFireData : public UWeaponFireData
 {
 	GENERATED_BODY()
@@ -76,7 +76,7 @@ public:
 	int32 BurstShots;
 	
 };
-UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+UCLASS(Blueprintable, BlueprintType)
 class MYPROJECT_API UPelletWeaponFireData : public UWeaponFireData
 {
 	GENERATED_BODY()
@@ -93,7 +93,7 @@ public:
 	
 };
 
-UCLASS(Blueprintable, BlueprintType, Category = "My Custom Data Assets")
+UCLASS(Blueprintable, BlueprintType)
 class MYPROJECT_API UChargeWeaponFireData : public UWeaponFireData
 {
 	GENERATED_BODY()

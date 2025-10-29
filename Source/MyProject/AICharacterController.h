@@ -21,7 +21,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAIPerceptionComponent* AIPerception;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float HealthWeight = 1.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float AmmoWeight = 1.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DistanceWeight = 1.0f;
+	UFUNCTION(BlueprintCallable)
 	void UpdateConfidence();
 private:
 	FTimerHandle ConfidenceCheckTimerHandle;

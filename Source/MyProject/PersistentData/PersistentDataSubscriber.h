@@ -24,7 +24,9 @@ class MYPROJECT_API IPersistentDataSubscriber
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void OnSave(UGameSaveFile& SaveFile) = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveLoad")
+	void SaveData(UGameSaveFile*& SaveFile);
 
-	virtual void OnLoad(UGameSaveFile& SaveFile) = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveLoad")
+	void LoadData(UGameSaveFile*& SaveFile);
 };

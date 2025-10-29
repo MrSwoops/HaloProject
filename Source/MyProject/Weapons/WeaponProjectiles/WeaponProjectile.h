@@ -5,6 +5,8 @@
 #include "MyProject/Interfaces/DamageDealer.h"
 #include "WeaponProjectile.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
 class UProjectileData;
 class UProjectileMovementComponent;
 class USphereComponent;
@@ -23,6 +25,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* Movement;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//UNiagaraSystem* NiagaraSystem;
+
+	// The Niagara component to hold the VFX
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	UNiagaraComponent* NiagaraComponent;
+	// The Niagara system asset for the bullet trail
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UNiagaraSystem* BulletTrailSystem;
+	void EnableBulletTrail();
+	void DisableBulletTrail();
 
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

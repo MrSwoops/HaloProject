@@ -7,7 +7,11 @@ public class MyProject : ModuleRules
 	public MyProject(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "GameplayTags", "FMODStudio", "CommonUI" });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"CoreUObject",
+			"Engine",
+			"UMG", "Niagara"
+		});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "UMG", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "GameplayTags", "FMODStudio", "CommonUI" });
 	}
 }

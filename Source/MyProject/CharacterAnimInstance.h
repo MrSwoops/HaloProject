@@ -28,6 +28,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")	
 	bool HasRifle = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")	
+	bool IsCrouching = false;
+
 	UFUNCTION(BlueprintPure, Category = "Animation")
 	FVector GetLookRigLocation() const;
 

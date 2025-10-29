@@ -15,8 +15,11 @@
 #include "Components/WeaponInventory.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "EventSystem/EventDefinitions.h"
+#include "EventSystem/GlobalEventManager.h"
 #include "Weapons/Grenade.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Weapons/WeaponData/ProjectileData.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -74,6 +77,11 @@ void APlayerCharacter::Die()
 	Super::Die();
 }
 
+void APlayerCharacter::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
+{
+	Super::TakeProjectileDamage(BulletData, HitRegion);
+	OnReceiveDamage.Broadcast(EnergyShield->CurrentEnergy, EnergyShield->MaxEnergy, BulletData->Damage);
+}
 
 void APlayerCharacter::TakeDamage(const int32& Damage)
 {
@@ -165,8 +173,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
 		
 		// Crouching
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &APlayerCharacter::Crouch);
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &APlayerCharacter::UnCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &APlayerCharacter::CharacterCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &APlayerCharacter::CharacterUnCrouch);
 		
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);

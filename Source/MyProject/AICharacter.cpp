@@ -24,6 +24,7 @@ void AAICharacter::BeginPlay()
 	{
 		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetPointLocation;
 		AnimInstance->TargetLookRigObject = Controller;
+		LookRigBehavior = &AnimInstance->LookRigBehavior;
 	}
 }
 
@@ -60,30 +61,30 @@ void AAICharacter::AIMove(const FVector2D& Value)
 	}
 }
 
-void AAICharacter::LookAtPoint(const FVector& TargetPoint, bool bUsePitch)
+void AAICharacter::Tick(float DeltaTime)
 {
-	if (Controller == nullptr) return;
+	Super::Tick(DeltaTime);
+	UpdateCharacterLookRotation();
+}
 
-	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+void AAICharacter::UpdateCharacterLookRotation()
+{
+	if (LookRigBehavior == nullptr) return;
+	FVector TargetLocation;
+	if (*LookRigBehavior == ELookRigBehaviour::TargetPointLocation)
 	{
-		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetPointLocation;
-		if (!bUsePitch)
-		{
-			FVector PitchlessPoint = TargetPoint;
-			PitchlessPoint.Z = 0; 
-			AnimInstance->TargetLookRigPoint = PitchlessPoint;
-		}
-		else
-		{
-			AnimInstance->TargetLookRigPoint = TargetPoint;
-		}
+		TargetLocation = CachedTargetPoint;
 	}
-	
+	else if (*LookRigBehavior == ELookRigBehaviour::TargetActorLocation && CachedTargetActor != nullptr)
+	{
+		TargetLocation = CachedTargetActor->GetActorLocation();
+	}
+	else return;
 	// Create Look rotation
-	FVector ToTarget = TargetPoint - GetActorLocation();
+	FVector ToTarget = TargetLocation - GetActorLocation();
 	ToTarget.Normalize();
 	FRotator LookAtRotation = ToTarget.Rotation();
-	if (!bUsePitch) LookAtRotation.Pitch = 0.f;
+	if (!UsePitch) LookAtRotation.Pitch = 0.f;
 	LookAtRotation.Pitch = FMath::Clamp(LookAtRotation.Pitch, -89.0f, 89.0f);
 
 	// Set controller rotation
@@ -102,3 +103,59 @@ void AAICharacter::LookAtPoint(const FVector& TargetPoint, bool bUsePitch)
 	}
 }
 
+
+void AAICharacter::LookAtPoint(const FVector& TargetPoint, bool bUsePitch)
+{
+	if (Controller == nullptr) return;
+
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetPointLocation;
+		if (!bUsePitch)
+		{
+			FVector PitchlessPoint = TargetPoint;
+			PitchlessPoint.Z = 0; 
+			AnimInstance->TargetLookRigPoint = PitchlessPoint;
+		}
+		else
+		{
+			AnimInstance->TargetLookRigPoint = TargetPoint;
+		}
+	}
+	CachedTargetPoint = TargetPoint;
+}
+
+void AAICharacter::LookAtActor(AActor* TargetActor, bool bUsePitch)
+{
+	if (Controller == nullptr) return;
+
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetActorLocation;
+		// if (!bUsePitch)
+		// {
+		// 	FVector PitchlessPoint = TargetPoint;
+		// 	PitchlessPoint.Z = 0; 
+		// 	AnimInstance->TargetLookRigPoint = PitchlessPoint;
+		// }
+		// else
+		{
+			AnimInstance->TargetLookRigObject = TargetActor;
+		}
+	}
+	CachedTargetActor = TargetActor;
+}
+
+
+bool AAICharacter::TryFireWeapon(float HoldTime)
+{
+	if (WeaponInventory == nullptr || WeaponInventory->CurrentWeapon == nullptr) return false;
+	WeaponInventory->CurrentWeapon->FirePressed();
+	if (HoldTime > 0.0f)
+	{
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, WeaponInventory->CurrentWeapon, &AWeapon::FireReleased, HoldTime, false, 0.0f);
+	}
+	else WeaponInventory->CurrentWeapon->FireReleased();
+	return true;
+}
