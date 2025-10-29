@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 
+class AOddBall;
+class AFlag;
 class AGameplayCharacter;
 
 namespace GlobalEventManager
@@ -11,8 +13,15 @@ namespace GlobalEventManager
 		AGameplayCharacter* Victim;
 	};
 
-	struct FTestMessage
+	struct FFlagCaptured
 	{
-		FString Message;
+		int32 Team;
+		AFlag* CapturedFlag;
+	};
+
+	struct FOddBallScored
+	{
+		int32 Team;
+		AOddBall* CapturedFlag;
 	};
 }
