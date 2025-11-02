@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "BaseGameMode.h"
+#include "MyProject/Components/WeaponInventory.h"
 #include "MultiplayerGameModeBase.generated.h"
 
 class UGameModeStateInfoWidget;
@@ -12,6 +13,10 @@ class AMultiplayerGameModeBase : public ABaseGameMode
 	GENERATED_BODY()
 public:
 	AMultiplayerGameModeBase();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FInventoryDefault DefaultPlayerInventory;
+	virtual void InitializeCharacterInventory(UWeaponInventory* Inv) override;
 	
 	virtual void StartRound();
 	virtual void EndRound();

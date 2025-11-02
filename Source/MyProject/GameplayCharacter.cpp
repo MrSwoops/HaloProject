@@ -39,6 +39,7 @@ AGameplayCharacter::AGameplayCharacter()
 	GetCapsuleComponent()->CanCharacterStepUpOn = ECB_Yes;
 
 	WeaponInventory = CreateDefaultSubobject<UWeaponInventory>(TEXT("WeaponInventory"));
+	WeaponInventory->OwnerCharacter = this;
 
 	//CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh2P"));
 	GetMesh()->SetCollisionProfileName("NoCollision");

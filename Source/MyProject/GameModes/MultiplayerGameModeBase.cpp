@@ -44,6 +44,11 @@ void AMultiplayerGameModeBase::EndRound()
 	IsRoundOngoing = false;
 }
 
+void AMultiplayerGameModeBase::InitializeCharacterInventory(UWeaponInventory* Inv)
+{
+	Inv->InitializeInventoryEquipment(DefaultPlayerInventory);
+}
+
 
 void AMultiplayerGameModeBase::InitializeGameModeUI()
 {

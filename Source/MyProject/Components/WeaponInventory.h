@@ -7,9 +7,27 @@
 #include "WeaponInventory.generated.h"
 
 
+class AGameplayCharacter;
 class AEquipment;
 class AGrenade;
 class AWeapon;
+
+USTRUCT(BlueprintType)
+struct FInventoryDefault
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	TSubclassOf<AWeapon> StartingPrimary;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	TSubclassOf<AWeapon> StartingSecondary;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	int32 StartingFragGrenades;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	int32 StartingPlasmaGrenades;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	TSubclassOf<AEquipment> StartingEquipment;
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYPROJECT_API UWeaponInventory : public UActorComponent
@@ -35,11 +53,21 @@ public:
 	UPROPERTY()
 	AEquipment* EquipmentSlot;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AWeapon> StartingPrimary;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AWeapon> StartingSecondary;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	bool UseOverrides = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|DefaultOverrides")
+	FInventoryDefault DefaultInventory;
 
+	UPROPERTY()
+	AGameplayCharacter* OwnerCharacter;
+	
+	void InitializeInventory();
+	void InitializeInventoryEquipment(FInventoryDefault& Inventory);
+private:
+	UFUNCTION()
+	void InitializeInventoryEquipment(TSubclassOf<AWeapon>& InStartingPrimary, TSubclassOf<AWeapon>& InStartingSecondary, int32& InStartingFragGrenades, int32& InStartingPlasmaGrenades, TSubclassOf<AEquipment>& InStartingEquipment);
+		
+public:
 	void PickUpWeapon(AWeapon* Weapon);
 	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
@@ -64,7 +92,6 @@ public:
 
 	void PickUpEquipment(AEquipment* Equipment);
 
-	void InitializeInventory();
 
 	void DropInventory();
 };

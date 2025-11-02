@@ -12,6 +12,7 @@
 #include "MyProjectPickUpComponent.h"
 #include "../PlayerCharacter.h"
 #include "../Weapons/Weapon.h"
+#include "MyProject/Equipment.h"
 
 // Sets default values for this component's properties
 UWeaponInventory::UWeaponInventory()
@@ -32,20 +33,58 @@ void UWeaponInventory::BeginPlay()
 	InitializeInventory();
 	
 }
-
 void UWeaponInventory::InitializeInventory()
 {
-	AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner());
-	if (StartingSecondary)
+	if (UseOverrides) InitializeInventoryEquipment(DefaultInventory);
+	else
 	{
-		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(StartingSecondary);
+		Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeCharacterInventory(this);
+	}
+}
+
+void UWeaponInventory::InitializeInventoryEquipment(FInventoryDefault& Inventory)
+{
+	AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner());
+	if (!Owner) return;
+	if (Inventory.StartingSecondary)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(Inventory.StartingSecondary);
 		Weapon->AttachWeapon(Owner);
 	} 
-	if (StartingPrimary)
+	if (Inventory.StartingPrimary)
 	{
-		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(StartingPrimary);
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(Inventory.StartingPrimary);
 		Weapon->AttachWeapon(Owner);
 	}
+	if (Inventory.StartingEquipment)
+	{
+	
+	}
+	RegularGrenades = Inventory.StartingFragGrenades;
+	PlasmaGrenades = Inventory.StartingPlasmaGrenades;
+}
+
+
+void UWeaponInventory::InitializeInventoryEquipment(TSubclassOf<AWeapon>& InStartingPrimary, TSubclassOf<AWeapon>& InStartingSecondary, int32& InStartingFragGrenades, int32& InStartingPlasmaGrenades, TSubclassOf<AEquipment>& InStartingEquipment)
+{
+	AGameplayCharacter* Owner = Cast<AGameplayCharacter>(GetOwner());
+	if (!Owner) return;
+	if (InStartingSecondary)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(InStartingSecondary);
+		Weapon->AttachWeapon(Owner);
+	} 
+	if (InStartingPrimary)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(InStartingPrimary);
+		Weapon->AttachWeapon(Owner);
+	}
+	if (InStartingEquipment)
+	{
+	
+	}
+	RegularGrenades = InStartingFragGrenades;
+	PlasmaGrenades = InStartingPlasmaGrenades;
 }
 
 
@@ -260,15 +299,17 @@ void UWeaponInventory::DropInventory()
 {
 	if (SecondaryWeapon)
 	{
+		SecondaryWeapon->EnableWeapon();
 		SecondaryWeapon->DropWeapon();
 		SecondaryWeapon = nullptr;
 	} 
 	if (PrimaryWeapon)
 	{
+		PrimaryWeapon->EnableWeapon();
 		PrimaryWeapon->DropWeapon();
 		PrimaryWeapon = nullptr;
 	}
-
+	CurrentWeapon = nullptr;
 	for (int32 i = 0; i < RegularGrenades; i++)
 	{
 		const FRotator SpawnRotation = GetOwner()->GetActorRotation();

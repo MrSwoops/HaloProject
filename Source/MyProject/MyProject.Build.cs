@@ -12,6 +12,6 @@ public class MyProject : ModuleRules
 			"Engine",
 			"UMG", "Niagara"
 		});
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "UMG", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "GameplayTags", "FMODStudio", "CommonUI" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "UMG", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "GameplayTags", "FMODStudio", "CommonUI", "Slate", "SlateCore" });
 	}
 }

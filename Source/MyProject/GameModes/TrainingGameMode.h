@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BaseGameMode.h"
 #include "MyProject/AICharacter.h"
+#include "MyProject/Components/WeaponInventory.h"
 #include "TrainingGameMode.generated.h"
 
 class AAICharacter;
@@ -22,6 +23,10 @@ public:
 	TSubclassOf<AAICharacter> DummyClass = AAICharacter::StaticClass();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DummyRespawnTime = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FInventoryDefault PlayerInventory;
+	virtual void InitializeCharacterInventory(UWeaponInventory* Inv) override;
 
 	virtual void BeginPlay() override;
 

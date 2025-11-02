@@ -74,3 +74,8 @@ void ABaseGameMode::RespawnCharacter(AGameplayCharacter* Character, float Respaw
 	TimerDelegate.BindUFunction(Character, FName("Respawn"), Location, Rotation);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, RespawnDelay, false);
 }
+
+void ABaseGameMode::InitializeCharacterInventory(UWeaponInventory* Inv)
+{
+	
+}

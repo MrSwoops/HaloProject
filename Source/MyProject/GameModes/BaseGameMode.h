@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "BaseGameMode.generated.h"
 
+class UWeaponInventory;
+
 namespace GlobalEventManager
 {
 	struct FPlayerKilledMessage;
@@ -41,6 +43,8 @@ public:
 	UFUNCTION()
 	virtual void RespawnCharacter(AGameplayCharacter* Character, float RespawnDelay = -1);
 	TArray<AActor*> SpawnPoints;
+
+	virtual void InitializeCharacterInventory(UWeaponInventory* Inv);
 
 protected:
 	virtual void BeginPlay() override;

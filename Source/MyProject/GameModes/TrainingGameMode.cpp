@@ -31,3 +31,8 @@ void ATrainingGameMode::RespawnCharacter(AGameplayCharacter* Character, float Re
 	else
 		Super::RespawnCharacter(Character, RespawnDelay);
 }
+
+void ATrainingGameMode::InitializeCharacterInventory(UWeaponInventory* Inv)
+{
+	Inv->InitializeInventoryEquipment(PlayerInventory);
+}

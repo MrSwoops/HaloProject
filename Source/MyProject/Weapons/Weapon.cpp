@@ -119,6 +119,12 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 
 void AWeapon::DropWeapon()
 {
+	if (IsPlayerOwned)
+	{
+		if (auto* IC = Cast<UEnhancedInputComponent>(Character->GetController()->InputComponent))
+		UnbindActions(IC);
+		IsPlayerOwned = false;
+	}
 	if (FireHandler)
 	{
 		FireHandler->CharacterOwner = nullptr;
@@ -129,12 +135,6 @@ void AWeapon::DropWeapon()
 	{
 		if (AmmoHandler) AmmoHandler->WeaponUI = nullptr;
 		WeaponUI->RemoveFromParent();
-	}
-	if (IsPlayerOwned)
-	{
-		if (auto* IC = Cast<UEnhancedInputComponent>(Character->GetController()))
-		UnbindActions(IC);
-		IsPlayerOwned = false;
 	}
 	
 	Character = nullptr;
@@ -159,12 +159,26 @@ void AWeapon::BindActions(UEnhancedInputComponent* InpComp)
 }
 void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
 {
-	FEnhancedInputActionEventBinding** Temp = Bindings2.Find("FirePressedAction");
-	InpComp->RemoveBinding(*(*Temp));
-	Temp = Bindings2.Find("FireReleasedAction");
-	InpComp->RemoveBinding(*(*Temp));
+	FEnhancedInputActionEventBinding** FirePressedBinding = Bindings2.Find("FirePressedAction");
+	if (FirePressedBinding && *FirePressedBinding)
+	{
+		InpComp->RemoveBinding(*(*FirePressedBinding));
+		Bindings2.Remove("FirePressedAction");
+	}
 
+	FEnhancedInputActionEventBinding** FireReleasedBinding = Bindings2.Find("FireReleasedAction");
+	if (FireReleasedBinding && *FireReleasedBinding)
+	{
+		InpComp->RemoveBinding(*(*FireReleasedBinding));
+		Bindings2.Remove("FireReleasedAction");
+	}
+
+	for (const auto& Binding : Bindings2)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Binding: %s"), *Binding.Key);
+	}
 	Bindings2.Empty();
+
 }
 
 void AWeapon::DisableWeapon()
