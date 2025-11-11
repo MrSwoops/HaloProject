@@ -3,10 +3,7 @@
 
 #include "BaseGameMode.h"
 
-#include "NavigationData.h"
-#include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/AICharacter.h"
 #include "MyProject/PlayerCharacter.h"
 #include "MyProject/Components/BulletPoolManager.h"
 #include "MyProject/EventSystem/EventDefinitions.h"

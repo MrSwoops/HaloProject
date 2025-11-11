@@ -10,6 +10,7 @@
 #include "MyProject/GameModes/BaseGameMode.h"
 #include "Weapon.generated.h"
 
+enum class EWeaponStorageSlot : uint8;
 class UWeaponFireData;
 class UWeaponFireHandler;
 class UWeaponAmmoHandler;
@@ -48,6 +49,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FGameplayTag WeaponType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	EWeaponStorageSlot StorageSlot;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	ABaseGameMode* GameMode;
@@ -134,9 +138,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
 	UWeaponUIData* UIData;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UWeaponFireHandler* FireHandler;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UWeaponAmmoHandler* AmmoHandler;
 
 	void InitializeWeapon();

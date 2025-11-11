@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "MyProject/Weapons/AutomaticWeapon.h"
 #include "ExplosiveComponent.generated.h"
 
+
+class UFMODEvent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYPROJECT_API UExplosiveComponent : public UActorComponent

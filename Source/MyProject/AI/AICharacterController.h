@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "AICharacterController.generated.h"
 
+struct FAIStimulus;
 /**
  * 
  */
@@ -19,8 +20,14 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBehaviorTree* BehaviorTree;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UAIPerceptionComponent* AIPerception;
+
+	UFUNCTION()
+	void OnTargetPerceptionUpdatedCallback(AActor* TargetActor, FAIStimulus Stimulus);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float HealthWeight = 1.0f;
@@ -34,6 +41,12 @@ private:
 	FTimerHandle ConfidenceCheckTimerHandle;
 	UPROPERTY(EditDefaultsOnly)
 	float ConfidenceCheckTimer = 1.0f;
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+	
+	static const FName HasLOSKeyName;
+	static const FName TargetEnemyKeyName;
+	static const FName LastKnownLocationKeyName;
 
 
 

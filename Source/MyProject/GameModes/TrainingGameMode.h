@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseGameMode.h"
-#include "MyProject/AICharacter.h"
+#include "MyProject/AI/AICharacter.h"
 #include "MyProject/Components/WeaponInventory.h"
 #include "TrainingGameMode.generated.h"
 

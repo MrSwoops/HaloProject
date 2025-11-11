@@ -12,7 +12,12 @@ enum class EWeaponType : uint8
 	SMG,
 };
 
-
+UENUM(BlueprintType)
+enum class EWeaponStorageSlot : uint8
+{
+	backGunStorageSocket UMETA(DisplayName = "Back"),
+	thigh_rGunStorageSocket UMETA(DisplayName = "Right Thigh")
+};
 
 
 

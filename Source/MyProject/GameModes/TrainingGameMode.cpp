@@ -4,7 +4,7 @@
 #include "TrainingGameMode.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/AICharacter.h"
+#include "MyProject/AI/AICharacter.h"
 
 void ATrainingGameMode::BeginPlay()
 {

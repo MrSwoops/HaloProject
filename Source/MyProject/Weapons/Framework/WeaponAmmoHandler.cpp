@@ -59,7 +59,7 @@ void UEnergyWeaponAmmoHandler::OnShot()
 void UWeaponAmmoHandler::TriggerReload()
 {
 	if (CurrentMagAmmo == MaxMagSize || CurrentReserveAmmo <= 0 || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle)) return;
-	if (ReloadAnimation != nullptr)
+	if (IsPlayerOwned && ReloadAnimation != nullptr)
 	{
 		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(CharacterOwner)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
 		{

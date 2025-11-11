@@ -4,6 +4,7 @@
 #include "EnergyWeaponUIWidget.h"
 
 #include "Components/ProgressBar.h"
+#include "MyProject/Weapons/WeaponUI/WeaponUIData.h"
 
 void UEnergyWeaponUIWidget::UpdateAmmoUI(const float& CurrentMagAmmo)
 {
@@ -12,6 +13,12 @@ void UEnergyWeaponUIWidget::UpdateAmmoUI(const float& CurrentMagAmmo)
 
 void UEnergyWeaponUIWidget::InitializeWeaponUI(const float& CurrentMagAmmo, const float& CurrentReserveAmmo, UWeaponUIData* UIData)
 {
+	if (UIData)
+	{
+		WeaponImage->SetBrushFromTexture(UIData->WeaponImage, true);
+		WeaponReticle->SetBrushFromTexture(UIData->ReticleImage, true);
+	}
+	
 	AddToPlayerScreen();
 	UpdateAmmoUI(CurrentMagAmmo);
 	SetReserveText(CurrentReserveAmmo);

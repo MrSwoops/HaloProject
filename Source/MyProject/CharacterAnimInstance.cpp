@@ -52,3 +52,50 @@ bool UCharacterAnimInstance::IsRigPointBehindActor() const
 	float DotProduct = FVector::DotProduct(GetOwningActor()->GetActorForwardVector(), TargetDirection);
 	return (DotProduct < 0.5f);
 }
+
+void UCharacterAnimInstance::OnMovement(const FVector2D& Value)
+{
+	float Angle = FMath::Atan2(Value.Y, Value.X);
+	float AngleDegrees = FMath::RadiansToDegrees(Angle);
+	AngleDegrees -= 90.0f; // Unreal needs to be extra and can't use standard euclidean defaults
+	if (AngleDegrees < 0)
+	{
+		AngleDegrees += 360;
+	}
+	EMovementDirection Direction;
+	if (AngleDegrees >= 337.5 || AngleDegrees < 22.5)
+	{
+		Direction = EMovementDirection::N; // North
+	}
+	else if (AngleDegrees >= 22.5 && AngleDegrees < 67.5)
+	{
+		Direction = EMovementDirection::NE; // North-East
+	}
+	else if (AngleDegrees >= 67.5 && AngleDegrees < 112.5)
+	{
+		Direction = EMovementDirection::E; // East
+	}
+	else if (AngleDegrees >= 112.5 && AngleDegrees < 157.5)
+	{
+		Direction = EMovementDirection::SE; // South-East
+	}
+	else if (AngleDegrees >= 157.5 && AngleDegrees < 202.5)
+	{
+		Direction = EMovementDirection::S; // South
+	}
+	else if (AngleDegrees >= 202.5 && AngleDegrees < 247.5)
+	{
+		Direction = EMovementDirection::SW; // South-West
+	}
+	else if (AngleDegrees >= 247.5 && AngleDegrees < 292.5)
+	{
+		Direction = EMovementDirection::W; // West
+	}
+	else// (AngleDegrees >= 292.5 && AngleDegrees < 337.5)
+	{
+		Direction = EMovementDirection::NW; // North-West
+	}
+
+	MovementDirection = Direction;
+	MovementSpeed = Value.Length();
+}

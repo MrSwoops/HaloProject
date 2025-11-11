@@ -16,6 +16,7 @@ class UWeaponAmmoHandler : public UObject
 	GENERATED_BODY()
 public:
 	ACharacter* CharacterOwner;
+	bool IsPlayerOwned = false;
 	AWeapon* WeaponOwner;
 	
 	int32 MaxMagSize;
@@ -51,8 +52,10 @@ public:
 
 	//UPROPERTY(EditDefaultsOnly)
 	virtual void Initialize(UWeaponAmmoData* AmmoData, UWeaponUIData* InUIData);
+	virtual void OnWeaponDropped() { CharacterOwner = nullptr; IsPlayerOwned = false; }
 	virtual void UpdateAmmoHandler(float DeltaTime) {}
 
+	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentMagPercent() {return static_cast<float>(CurrentMagAmmo) / static_cast<float>(MaxMagSize);}
 	
 };

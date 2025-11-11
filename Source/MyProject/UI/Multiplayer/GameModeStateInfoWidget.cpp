@@ -9,7 +9,7 @@
 void UGameModeStateInfoWidget::UpdateScore(int CurrentScore, int ScoreToWin, UTextBlock* ScoreText, UProgressBar* ScoreProgress)
 {
 	ScoreText->SetText(FText::FromString(FString::FromInt(CurrentScore)));
-	ScoreProgress->SetPercent(CurrentScore / ScoreToWin);
+	ScoreProgress->SetPercent(static_cast<float>(CurrentScore) / static_cast<float>(ScoreToWin));
 }
 
 void UGameModeStateInfoWidget::UpdateTime(float Time)

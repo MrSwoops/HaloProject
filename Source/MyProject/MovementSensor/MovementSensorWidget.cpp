@@ -30,13 +30,13 @@ int32 UMovementSensorWidget::NativePaint(const FPaintArgs& Args, const FGeometry
     if (!MovementSensor || !BackgroundImage)
         return CurrentLayer;
 
-    AActor* Owner = MovementSensor->GetOwner();
+    AGameplayCharacter* Owner = Cast<AGameplayCharacter>(MovementSensor->GetOwner());
     if (!Owner)
         return CurrentLayer;
-
+    
     const FVector PlayerLoc = Owner->GetActorLocation();
-    const FRotator PlayerRot = Owner->GetActorRotation();
-    const int32 PlayerTeam = Cast<AGameplayCharacter>(Owner)->Team;
+    const FRotator PlayerRot = Owner->Controller->GetControlRotation();
+    const int32 PlayerTeam = Owner->Team;
 
     //------------------------------------------------------------
     // 1. Get BackgroundImage size and position relative to overlay

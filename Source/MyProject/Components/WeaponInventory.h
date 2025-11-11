@@ -43,11 +43,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AWeapon* CurrentWeapon = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AWeapon* PrimaryWeapon = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AWeapon* SecondaryWeapon = nullptr;
 
 	UPROPERTY()

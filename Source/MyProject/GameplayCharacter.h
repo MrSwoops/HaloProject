@@ -160,9 +160,12 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
-protected:
+public:
 	UPROPERTY(BlueprintReadOnly)
 	bool IsUnderFire;
+
+	USceneComponent* VisionPoint;
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool UnderFireTime;
 private:

@@ -4,11 +4,12 @@
 #include "AICharacter.h"
 
 #include "AIController.h"
-#include "CharacterAnimInstance.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/WeaponInventory.h"
+#include "MyProject/Components/WeaponInventory.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Weapons/Weapon.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyProject/CharacterAnimInstance.h"
+#include "MyProject/Weapons/Weapon.h"
 
 AAICharacter::AAICharacter()
 {
@@ -28,6 +29,18 @@ void AAICharacter::BeginPlay()
 	}
 }
 
+void AAICharacter::JumpToDestination(FVector Destination)
+{
+	Destination.Z += 100;
+	FVector OutVelocity;
+	bool bHasSolution = UGameplayStatics::SuggestProjectileVelocity_CustomArc(
+	this,           // World context (AActor or UObject)
+	OutVelocity, // Output velocity
+	GetActorLocation(),
+	Destination
+	);
+	LaunchCharacter(OutVelocity, true, true);
+}
 
 void AAICharacter::MoveToRandomPoint()
 {

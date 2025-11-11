@@ -41,6 +41,7 @@ AGameplayCharacter::AGameplayCharacter()
 	WeaponInventory = CreateDefaultSubobject<UWeaponInventory>(TEXT("WeaponInventory"));
 	WeaponInventory->OwnerCharacter = this;
 
+
 	//CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh2P"));
 	GetMesh()->SetCollisionProfileName("NoCollision");
 	GetMesh()->SetupAttachment(GetCapsuleComponent());
@@ -56,6 +57,9 @@ AGameplayCharacter::AGameplayCharacter()
 	if (EnergyShield && !EnergyShield->ShieldMesh) EnergyShield->ShieldMesh = EnergyShieldShell;
 	EnergyShieldShell->SetShieldVisibility(false);
 
+	VisionPoint = CreateDefaultSubobject<USceneComponent>(TEXT("VisionPoint"));
+	VisionPoint->SetupAttachment(GetMesh());
+	
 	AIPerceptionStimuli = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("AIPerceptionStimuli"));
 }
 
@@ -299,16 +303,14 @@ void AGameplayCharacter::Move(const FVector2D& Value)
 {
 	if (Controller == nullptr) return;
 
-	// Get the controller's control rotation (ignoring pitch for movement)
 	FRotator ControlRotation = Controller->GetControlRotation();
-
-	// Use only the yaw rotation (ignore pitch/roll)
 	ControlRotation.Pitch = 0.0f;
 	ControlRotation.Roll = 0.0f;
 
-	// Get the direction vectors based on the controller's yaw
 	FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X);  // Forward (X)
 	FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y);    // Right (Y)
+
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())) AnimInstance->OnMovement(Value);
 	
 	AddMovementInput(ForwardDirection, Value.Y);
 	AddMovementInput(RightDirection, Value.X);

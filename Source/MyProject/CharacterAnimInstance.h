@@ -16,6 +16,19 @@ enum class ELookRigBehaviour : uint8
 	TargetActorForwardVector,
 	TargetComponentForwardVector,
 };
+
+UENUM(BlueprintType)
+enum class EMovementDirection : uint8
+{
+	N,
+	NE,
+	E,
+	SE,
+	S,
+	SW,
+	W,
+	NW
+};
 /**
  * 
  */
@@ -30,6 +43,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")	
 	bool IsCrouching = false;
+
+	void OnMovement(const FVector2D& Value);
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Animation")	
+	EMovementDirection MovementDirection;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Animation")	
+	float MovementSpeed;
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
 	FVector GetLookRigLocation() const;

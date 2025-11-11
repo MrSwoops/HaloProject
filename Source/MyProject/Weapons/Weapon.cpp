@@ -101,6 +101,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	{
 		IsPlayerOwned = true;
 		if (FireHandler) FireHandler->IsPlayerOwned = true;
+		if (AmmoHandler) AmmoHandler->IsPlayerOwned = true;
 		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(PC->GetController()), UIData->WeaponUIClass);
 		if (AmmoHandler)
 		{
@@ -114,7 +115,7 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 		if (FireHandler) FireHandler->AimPoint = &Cast<UCharacterAnimInstance>(Character->GetMesh()->GetAnimInstance())->TargetLookRigPoint;
 		AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
 	}
-	Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())->HasRifle = true;
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())) AnimInstance->HasRifle = true;
 }
 
 void AWeapon::DropWeapon()
@@ -127,10 +128,12 @@ void AWeapon::DropWeapon()
 	}
 	if (FireHandler)
 	{
-		FireHandler->CharacterOwner = nullptr;
-		FireHandler->IsPlayerOwned = false;
+		FireHandler->OnWeaponDropped();
 	}
-	if (AmmoHandler) AmmoHandler->CharacterOwner = nullptr;
+	if (AmmoHandler)
+	{
+		AmmoHandler->OnWeaponDropped();
+	}
 	if (WeaponUI)
 	{
 		if (AmmoHandler) AmmoHandler->WeaponUI = nullptr;
@@ -166,6 +169,7 @@ void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
 		Bindings2.Remove("FirePressedAction");
 	}
 
+	if (FireHandler->IsFireHeld) {FireHandler->FireReleased();}
 	FEnhancedInputActionEventBinding** FireReleasedBinding = Bindings2.Find("FireReleasedAction");
 	if (FireReleasedBinding && *FireReleasedBinding)
 	{

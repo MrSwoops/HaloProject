@@ -20,6 +20,11 @@ class UWeaponFireHandler : public UObject
 public:
 
 	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager);
+	virtual void OnWeaponDropped()
+	{
+		CharacterOwner = nullptr;
+		IsPlayerOwned = false;
+	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Weapons|FireHandler")
 	virtual void FirePressed() { IsFireHeld = true; }
@@ -100,6 +105,14 @@ class UBurstFireHandler : public UWeaponFireHandler
 public:
 	virtual void Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager) override;
 
+	virtual void OnWeaponDropped() override
+	{
+		Super::OnWeaponDropped();
+		CharacterOwner = nullptr;
+		IsPlayerOwned = false;
+		GetWorld()->GetTimerManager().ClearTimer(BurstTimerHandle);
+	}
+	
 	virtual void FirePressed() override
 	{
 		if (IsReadyToFire())
@@ -119,8 +132,7 @@ public:
 		CurrentBurstCount++;
 		if (CurrentBurstCount < BurstShots)
 		{
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UBurstFireHandler::FireBullet, BurstRate, false);
+			GetWorld()->GetTimerManager().SetTimer(BurstTimerHandle, this, &UBurstFireHandler::FireBullet, BurstRate, false);
 		}
 	}
 
@@ -128,6 +140,7 @@ public:
 	int32 BurstShots;
 	
 private:
+	FTimerHandle BurstTimerHandle;
 	int32 CurrentBurstCount = 0;
 };
 

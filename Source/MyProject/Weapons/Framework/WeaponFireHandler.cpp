@@ -54,12 +54,16 @@ void UWeaponFireHandler::GetBulletSpawnInfo(FVector& SpawnLocation, FVector& Dir
 	CollisionParams.AddIgnoredActor(CharacterOwner);
 	CollisionParams.AddIgnoredActor(WeaponOwner);
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 5.f, 0, 1.f);
+	FCollisionObjectQueryParams CollisionObjectParams;
 #define ECC_Hurtbox ECC_GameTraceChannel4
+	CollisionObjectParams.AddObjectTypesToQuery(ECC_Hurtbox);
+	CollisionObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(
 		HitResult,
 		Start,
 		End,
-		FCollisionObjectQueryParams(ECC_Hurtbox), // Object channel(s) to hit
+		CollisionObjectParams,
 		CollisionParams
 	);
 	Direction = (bHit) ? (HitResult.ImpactPoint - SpawnLocation).GetSafeNormal() : LookRotation.Vector();
@@ -72,7 +76,7 @@ void UWeaponFireHandler::GetPlayerBulletSpawnInfo(FVector& SpawnLocation, FRotat
 	SpawnLocation = Cast<AWeapon>(WeaponOwner)->GunMuzzle->GetComponentLocation();//WeaponOwner->GetActorLocation() + LookRotation.RotateVector(*MuzzleOffset);
 
 	Start = PlayerController->PlayerCameraManager->GetCameraLocation();
-	End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 2000.f);
+	End = Start + (PlayerController->PlayerCameraManager->GetActorForwardVector() * 200000.f);
 }
 
 void UWeaponFireHandler::GetAIBulletSpawnInfo(FVector& SpawnLocation, FRotator& LookRotation, FVector& Start, FVector& End)

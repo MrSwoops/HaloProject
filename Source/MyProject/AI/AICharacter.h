@@ -3,10 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayCharacter.h"
+#include "ThreatTable.h"
+#include "MyProject/GameplayCharacter.h"
 #include "AICharacter.generated.h"
 
 enum class ELookRigBehaviour : uint8;
+
+UENUM(BlueprintType)
+enum class EDefaultAIBehavior : uint8
+{
+	RandomMovement,
+	FollowPath,
+	Stationary,
+};
 /**
  * 
  */
@@ -19,6 +28,12 @@ public:
 
 	AAICharacter();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FThreatTable ThreatTable = FThreatTable();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EDefaultAIBehavior DefaultBehavior;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void AIMove(const FVector2D& Value);
 
@@ -28,6 +43,8 @@ public:
 	void MoveToRandomPoint();
 
 	void SetConfidence();
+	UFUNCTION(BlueprintCallable)
+	void JumpToDestination(FVector Destination);
 
 protected:
 	virtual void BeginPlay() override;
