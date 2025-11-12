@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "IDamageable.generated.h"
 
+class AWeaponProjectile;
 class UProjectileData;
 enum EHurtboxType : int;
 class IDamageDealer;
@@ -29,5 +30,5 @@ public:
 	float Health = 0;
 	virtual void TakeDamage(IDamageDealer*) = 0;
 	virtual void TakeDamage(const int32&) = 0;
-	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) = 0;
+	virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) = 0;
 };

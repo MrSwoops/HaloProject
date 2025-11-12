@@ -8,15 +8,8 @@ struct FThreatTable
 {
 public:
 	GENERATED_BODY()
-// 	UFUNCTION()
-// 	void AddThreat(AActor* Target, float Threat);
-// 	void RemoveThreat();
-// 	
-//
-// private:
-// 	TMap<AActor*, float> ThreatTable;
-
 	void AddThreat(AActor* Entry, float Threat);
+	void AddToTop(AActor* Entry);
 	void RemoveThreat(AActor* Entry, float Threat);
 	
 	void RemoveEntry(AActor* Entry);
@@ -29,6 +22,8 @@ public:
 	bool HasThreats() const { return ThreatTable.Num() > 0; }
 
 private:
+	UPROPERTY()
 	TMap<AActor*, float> ThreatTable;
+	UPROPERTY()
 	TMap<AActor*, float> RemovalTimers;
 };

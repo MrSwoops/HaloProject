@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyProject/CharacterAnimInstance.h"
+#include "MyProject/AI/BaseAIBlackboardKeyNames.h"
 #include "MyProject/Weapons/Weapon.h"
 
 AAICharacter::AAICharacter()
@@ -58,9 +59,8 @@ void AAICharacter::SetConfidence()
 			ConfidenceLevel *= Weapon->AmmoHandler->GetCurrentMagPercent();
 		}
 		
-		FName KeyName = TEXT("Confidence");
 		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
-		BlackboardComp->SetValueAsFloat(KeyName, ConfidenceLevel);
+		BlackboardComp->SetValueAsFloat(ConfidenceKeyName, ConfidenceLevel);
 	}
 }
 
@@ -171,4 +171,57 @@ bool AAICharacter::TryFireWeapon(float HoldTime)
 	}
 	else WeaponInventory->CurrentWeapon->FireReleased();
 	return true;
+}
+
+void AAICharacter::EnterCombat()
+{
+	Super::EnterCombat();
+	if (auto* AICont = Cast<AAIController>(GetController()))
+	{
+		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
+		BlackboardComp->SetValueAsBool(InCombatKeyName, true);
+	}
+}
+
+void AAICharacter::ExitCombat()
+{
+	Super::ExitCombat();
+	if (auto* AICont = Cast<AAIController>(GetController()))
+	{
+		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
+		BlackboardComp->SetValueAsBool(InCombatKeyName, false);
+	}
+}
+
+void AAICharacter::OnStartTakingFire(AGameplayCharacter* Attacker, float Damage)
+{
+	Super::OnStartTakingFire();
+	if (auto* AICont = Cast<AAIController>(GetController()))
+	{
+		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
+		BlackboardComp->SetValueAsBool(UnderFireKeyName, true);
+		if (Attacker != nullptr)
+		{
+			if (!IsInCombat || !BlackboardComp->GetValueAsBool(HasLOSKeyName))
+			{
+				BlackboardComp->SetValueAsBool(InCombatKeyName, true);
+				ThreatTable.AddToTop(Attacker);
+				LookAtActor(Attacker, true);
+			}
+			else
+			{
+				ThreatTable.AddThreat(Attacker, Damage);
+			}
+		}
+	}
+}
+
+void AAICharacter::OnStopTakingFire()
+{
+	Super::OnStopTakingFire();
+	if (auto* AICont = Cast<AAIController>(GetController()))
+	{
+		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
+		BlackboardComp->SetValueAsBool(UnderFireKeyName, false);
+	}
 }

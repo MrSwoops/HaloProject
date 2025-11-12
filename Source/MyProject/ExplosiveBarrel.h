@@ -29,7 +29,7 @@ public:
 	float Health = 0;
 	virtual void TakeDamage(IDamageDealer* DD) override;
 	virtual void TakeDamage(const int32& Damage) override;
-	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) override;
+	virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) override;
 
 	void Reset();
 

@@ -14,6 +14,7 @@
 #include "Components/HurtBox.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.h"
+#include "Combat/DamageLogEntry.h"
 #include "Engine/LocalPlayer.h"
 #include "Interfaces/DamageDealer.h"
 #include "Engine/World.h"
@@ -25,6 +26,7 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Weapons/Grenade.h"
 #include "Weapons/WeaponData/ProjectileData.h"
+#include "Weapons/WeaponProjectiles/WeaponProjectile.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -96,6 +98,7 @@ void AGameplayCharacter::Respawn(const FVector& Location, const FRotator& Rotati
 	WeaponInventory->InitializeInventory();
 	if (EnergyShield) EnergyShield->EnableShieldComponent();
 	SetActorLocationAndRotation(Location, Rotation);
+	DamageLog.ClearLog();
 }
 
 float AGameplayCharacter::GetHealthPercent()
@@ -155,10 +158,24 @@ void AGameplayCharacter::Die()
 	Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->RespawnCharacter(this);
 
 	using namespace GlobalEventManager;
-	const FPlayerKilledMessage Msg = FPlayerKilledMessage(this, this);
+	AGameplayCharacter* Killer = nullptr;
+	TArray<AGameplayCharacter*> Assists;
+	DamageLog.GetDamageInformation(Killer, Assists);
+	const FPlayerKilledMessage Msg = FPlayerKilledMessage(DamageLog, Killer, Assists, this);
 	FGlobalEventManager::RaiseEvent(Msg);
 }
 
+void AGameplayCharacter::OnStartTakingFire(AGameplayCharacter* Attacker, float Damage)
+{
+	IsUnderFire = true;
+	FTimerManager* TManager = &GetWorld()->GetTimerManager();
+	if (TManager->IsTimerActive(UnderFireTimer)) TManager->ClearTimer(UnderFireTimer);
+	TManager->SetTimer(UnderFireTimer, this, &AGameplayCharacter::OnStopTakingFire, UnderFireTime, false);
+}
+void AGameplayCharacter::OnStopTakingFire()
+{
+	IsUnderFire = false;
+}
 
 void AGameplayCharacter::TakeDamage(IDamageDealer* dd)
 {
@@ -166,26 +183,26 @@ void AGameplayCharacter::TakeDamage(IDamageDealer* dd)
 }
 void AGameplayCharacter::TakeDamage(const int32& Damage)
 {
+	if (IsDead) return;
 	if (EnergyShield)
 		Health -= EnergyShield->TakeDamage(Damage);
 	else
 		Health -= Damage;
-	if (Health <= 0 && !IsDead) { Die(); return; }
+	if (Health <= 0) { Die(); return; }
 	
 	// Mark the player as under fire
-	IsUnderFire = true;
-	FTimerManager* TManager = &GetWorld()->GetTimerManager();
-	if (TManager->IsTimerActive(UnderFireTimer)) TManager->ClearTimer(UnderFireTimer);
-	TManager->SetTimer(UnderFireTimer, [this]() { IsUnderFire = false; }, UnderFireTime, false);
+	OnStartTakingFire();
+	
 }
-void AGameplayCharacter::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
+void AGameplayCharacter::TakeProjectileDamage(AWeaponProjectile* Projectile, const EHurtboxType& HitRegion)
 {
+	if (IsDead) return;
 	if (EnergyShield)
 	{
-		int32 Damage = EnergyShield->TakeProjectileDamage(BulletData, HitRegion);
+		int32 Damage = EnergyShield->TakeProjectileDamage(Projectile->ProjectileData, HitRegion);
 		if (Damage > 0)
 		{
-			if (BulletData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+			if (Projectile->ProjectileData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
 				Health = 0;
 			else
 				Health -= Damage;
@@ -193,13 +210,16 @@ void AGameplayCharacter::TakeProjectileDamage(const UProjectileData* BulletData,
 	}
 	else
 	{
-		if (BulletData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
+		if (Projectile->ProjectileData->CritHitBehavior & InstaKHeadHealth && HitRegion == Head)
 			Health = 0;
 		else
-			Health -= BulletData->Damage;
+			Health -= Projectile->ProjectileData->Damage;
 		
 	}
-	if (Health <= 0 && !IsDead) Die();
+	if (Health <= 0) { Die(); return; }
+	OnStartTakingFire(Projectile->Shooter, Projectile->GetDamage());
+	FDamageLogEntry LogEntry = FDamageLogEntry(Weapon, Projectile->GetDamage(), Projectile->Shooter, Projectile->Weapon);
+	DamageLog.AddEntry(LogEntry);
 }
 
 void AGameplayCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)

@@ -10,11 +10,9 @@
 #include "MyProject/Components/WeaponInventory.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "MyProject/AI/BaseAIBlackboardKeyNames.h"
 #include "MyProject/Weapons/Weapon.h"
 
-const FName AAICharacterController::HasLOSKeyName(TEXT("HasLOSTargetEnemy"));
-const FName AAICharacterController::TargetEnemyKeyName(TEXT("TargetEnemy"));
-const FName AAICharacterController::LastKnownLocationKeyName(TEXT("LastKnownEnemyLocation"));
 
 AAICharacterController::AAICharacterController()
 {
@@ -48,13 +46,13 @@ void AAICharacterController::OnPossess(APawn* InPawn)
 
 void AAICharacterController::OnTargetPerceptionUpdatedCallback(AActor* TargetActor, FAIStimulus Stimulus)
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, "UpdatePerception");
+	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, "UpdatePerception");
 	AGameplayCharacter* SensedCharacter = Cast<AGameplayCharacter>(TargetActor);
 	AGameplayCharacter* OwnerCharacter = Cast<AGameplayCharacter>(GetPawn());
-	//if (SensedCharacter == nullptr || OwnerCharacter == nullptr || OwnerCharacter->Team == SensedCharacter->Team) return;
-	if (SensedCharacter == nullptr){if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "NoSensedCharacter"); return;}
-	if (OwnerCharacter == nullptr) {if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "NoOwnerCharacter");return;}
-	if (OwnerCharacter->Team == SensedCharacter->Team){ if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "SameTeam");return;}
+	if (SensedCharacter == nullptr || OwnerCharacter == nullptr || OwnerCharacter->Team == SensedCharacter->Team) return;
+	//if (SensedCharacter == nullptr){if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "NoSensedCharacter"); return;}
+	//if (OwnerCharacter == nullptr) {if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "NoOwnerCharacter");return;}
+	//if (OwnerCharacter->Team == SensedCharacter->Team){ if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "SameTeam");return;}
 	
 	UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
 	
@@ -63,13 +61,13 @@ void AAICharacterController::OnTargetPerceptionUpdatedCallback(AActor* TargetAct
 		BlackboardComp->SetValueAsBool(HasLOSKeyName, true);
 		BlackboardComp->SetValueAsObject(TargetEnemyKeyName, SensedCharacter);
 		OwnerCharacter->EnterCombat();
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "Sensed");
+		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "Sensed");
 	}
 	else
 	{
 		BlackboardComp->SetValueAsVector(LastKnownLocationKeyName, SensedCharacter->GetActorLocation());
 		BlackboardComp->SetValueAsBool(HasLOSKeyName, false);
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "LostSense");
+		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "LostSense");
 	}
 }
 
@@ -86,9 +84,8 @@ void AAICharacterController::UpdateConfidence()
 			ConfidenceLevel *= FMath::Pow(Weapon->AmmoHandler->GetCurrentMagPercent(), AmmoWeight); 
 		}
 	}
-	FName KeyName = TEXT("Confidence");
 	UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
-	BlackboardComp->SetValueAsFloat(KeyName, ConfidenceLevel);
+	BlackboardComp->SetValueAsFloat(ConfidenceKeyName, ConfidenceLevel);
 }
 // ConfidenceLevel = 1 * (HealthPercent^HealthWeight * AmmoPercent^AmmoWeight * TargetDistancePercent^DistanceWeight);
 

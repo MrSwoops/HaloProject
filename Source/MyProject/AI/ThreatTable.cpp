@@ -8,6 +8,24 @@ void FThreatTable::AddThreat(AActor* Entry, float Threat)
 	else ThreatTable.Add(Entry, Threat);
 }
 
+void FThreatTable::AddToTop(AActor* Entry)
+{
+	if (!Entry) return;
+
+	float HighestThreat = -FLT_MAX;
+	for (const auto& Pair : ThreatTable)
+	{
+		if (Pair.Value > HighestThreat)
+		{
+			HighestThreat = Pair.Value;
+		}
+	}
+	HighestThreat++;
+	if (float* ExistingThreat = ThreatTable.Find(Entry)) *ExistingThreat = HighestThreat;
+	else ThreatTable.Add(Entry, HighestThreat);
+}
+
+
 void FThreatTable::RemoveThreat(AActor* Entry, float Threat)
 {
 	if (!Entry) return;

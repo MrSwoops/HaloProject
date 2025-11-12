@@ -7,6 +7,7 @@
 #include "MyProject/GameplayCharacter.h"
 #include "AICharacter.generated.h"
 
+class APatrolPath;
 enum class ELookRigBehaviour : uint8;
 
 UENUM(BlueprintType)
@@ -33,6 +34,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EDefaultAIBehavior DefaultBehavior;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APatrolPath* PatrolPath;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AIMove(const FVector2D& Value);
@@ -45,6 +48,13 @@ public:
 	void SetConfidence();
 	UFUNCTION(BlueprintCallable)
 	void JumpToDestination(FVector Destination);
+
+	virtual void EnterCombat() override;
+	virtual void ExitCombat() override;
+	virtual void OnStartTakingFire(AGameplayCharacter* Attacker, float Damage) override;
+	virtual void OnStopTakingFire() override;
+
+	//virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) override;
 
 protected:
 	virtual void BeginPlay() override;

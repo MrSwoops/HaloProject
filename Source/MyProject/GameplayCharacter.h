@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combat/DamageLog.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/IDamageable.h"
 #include "GameplayCharacter.generated.h"
@@ -68,6 +69,8 @@ public:
 	
 	bool IsDead = false;
 
+	FDamageLog DamageLog = FDamageLog();
+
 #pragma region Combat
 public:
 	UFUNCTION(BlueprintCallable)
@@ -81,6 +84,19 @@ public:
 protected:
 	float ExitCombatTime = 10.0f;
 	FTimerHandle ExitCombatTimer;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual void OnStartTakingFire(AGameplayCharacter* Attacker = nullptr, float Damage = 0);
+	UFUNCTION(BlueprintCallable)
+	virtual void OnStopTakingFire();
+	UPROPERTY(BlueprintReadOnly)
+	bool IsUnderFire;
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool UnderFireTime;
+private:
+	FTimerHandle UnderFireTimer;
 #pragma endregion Combat
 
 public:
@@ -118,7 +134,7 @@ public:
 	float MaxHealth = 45;
 	virtual void TakeDamage(IDamageDealer*) override;
 	virtual void TakeDamage(const int32&) override;
-	virtual void TakeProjectileDamage(const UProjectileData*, const EHurtboxType&) override;
+	virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) override;
 
 	UCharacterInteractableComponent* CurrentInteraction = nullptr;
 	TArray<UCharacterInteractableComponent*> Interactables;
@@ -133,6 +149,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+public:
 	void Look(const FInputActionValue& Value);
 	UPROPERTY(BlueprintReadOnly)
 	FRotator DesiredRotation;
@@ -160,14 +177,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Melee();
 
-public:
-	UPROPERTY(BlueprintReadOnly)
-	bool IsUnderFire;
-
 	USceneComponent* VisionPoint;
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool UnderFireTime;
-private:
-	FTimerHandle UnderFireTimer;
+
 };

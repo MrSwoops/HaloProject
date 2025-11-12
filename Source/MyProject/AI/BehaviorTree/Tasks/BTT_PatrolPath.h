@@ -1,32 +1,30 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTT_MoveToTarget.generated.h"
+#include "BTT_PatrolPath.generated.h"
 
 class AAICharacter;
 /**
  * 
  */
 UCLASS()
-class MYPROJECT_API UBTT_MoveToTarget : public UBTTaskNode
+class MYPROJECT_API UBTT_PatrolPath : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UBTT_MoveToTarget();
+	UBTT_PatrolPath();
 	
 protected:
-	UPROPERTY(EditAnywhere, Category = "Pathing")
-	FBlackboardKeySelector InTargetKey;
 	UPROPERTY(EditAnywhere, Category = "Pathing")
 	float AcceptableGoalRadius;
 	UPROPERTY(EditAnywhere, Category = "Pathing")
 	float PathFollowLenience;
 	UPROPERTY(EditAnywhere, Category = "Pathing", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float MoveSpeed = 1.0f;
+	float MoveSpeed = 0.6f;
 	TArray<FVector> CurrentPath;
 	int CurrentIndex = 0;
 
@@ -40,8 +38,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "LookSettings")
 	bool LookAlongPath;
 	UPROPERTY(EditAnywhere, Category = "LookSettings")
-	bool LookAtTarget;
-	UPROPERTY(EditAnywhere, Category = "LookSettings")
 	bool UsePitch;
 
 	FVector2D GetMovementInput(AAICharacter* Char, FVector Direction);
@@ -50,5 +46,8 @@ protected:
 	//virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+private:
+	bool Loops = false;
 	
 };

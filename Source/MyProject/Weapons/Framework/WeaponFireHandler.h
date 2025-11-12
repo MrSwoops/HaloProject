@@ -37,7 +37,7 @@ public:
 
 	FGameplayTag* WeaponType;
 	FVector* MuzzleOffset;
-	ACharacter* CharacterOwner;
+	AGameplayCharacter* CharacterOwner;
 	AActor* WeaponOwner;
 	bool IsPlayerOwned = false;
 	float Spread = 0.0f;

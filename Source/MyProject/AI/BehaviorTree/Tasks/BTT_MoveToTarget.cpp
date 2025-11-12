@@ -34,7 +34,6 @@ EBTNodeResult::Type UBTT_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 	CurrentIndex = 0;
 	if (InTargetKey.SelectedKeyType && InTargetKey.SelectedKeyType->IsChildOf(UBlackboardKeyType_Object::StaticClass())) // Path to Actor
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "Object Path");
 		AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(InTargetKey.SelectedKeyName));
 		FPathFindingQuery Query;
 		Query.StartLocation = AICharacter->GetActorLocation();
@@ -69,7 +68,6 @@ EBTNodeResult::Type UBTT_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 	else // Path to Location
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, "Vector Path");
 		FVector TargetPoint = OwnerComp.GetBlackboardComponent()->GetValueAsVector(InTargetKey.SelectedKeyName);
 		FNavLocation TargetLocation;
 		NavSys->ProjectPointToNavigation(TargetPoint, TargetLocation);
@@ -101,13 +99,11 @@ EBTNodeResult::Type UBTT_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 			}
 		}
 	}
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "Invalid Key");
 	return EBTNodeResult::Failed;
 }
 
 void UBTT_MoveToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, "Tick");
 	AAICharacterController* AICon = Cast<AAICharacterController>(OwnerComp.GetAIOwner());
 	if (!AICon)
 	{
@@ -177,5 +173,5 @@ FVector2D UBTT_MoveToTarget::GetMovementInput(AAICharacter* Char, FVector Direct
 	Input.X = FVector::DotProduct(Direction, Char->GetActorRightVector());
 	Input.Y = FVector::DotProduct(Direction, Char->GetActorForwardVector());
 
-	return Input;
+	return Input.GetSafeNormal() * MoveSpeed;
 }

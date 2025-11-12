@@ -47,7 +47,7 @@ void AExplosiveBarrel::TakeDamage(const int32& Damage)
 	}
 }
 
-void AExplosiveBarrel::TakeProjectileDamage(const UProjectileData*, const EHurtboxType&)
+void AExplosiveBarrel::TakeProjectileDamage(AWeaponProjectile* ProjectileData, const EHurtboxType& HitRegion)
 {
 	
 }

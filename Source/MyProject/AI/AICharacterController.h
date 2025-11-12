@@ -44,9 +44,9 @@ private:
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	
-	static const FName HasLOSKeyName;
-	static const FName TargetEnemyKeyName;
-	static const FName LastKnownLocationKeyName;
+	// static const FName HasLOSKeyName;
+	// static const FName TargetEnemyKeyName;
+	// static const FName LastKnownLocationKeyName;
 
 
 

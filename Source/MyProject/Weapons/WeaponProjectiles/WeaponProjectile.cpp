@@ -38,19 +38,20 @@ void AWeaponProjectile::BeginPlay()
 
 void AWeaponProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ReturnToPool();
 	if (OtherComp && OtherActor)
 	{
+		//if ((OtherActor == this) || (OtherComp == nullptr)) return;
 		if (auto* Damageable = Cast<IIDamageable>(OtherActor))
 		{
 			if (UHurtBox* HurtBox = Cast<UHurtBox>(OtherComp))
 			{
+				Damageable->TakeProjectileDamage(this, HurtBox->HurtboxType);
+				
 				if (ProjectileData->HasPenetration && HurtBox->HurtboxType != EHurtboxType::Head)
 					ReturnToPool();
 				else
 					ReturnToPool();
 				
-				Damageable->TakeProjectileDamage(ProjectileData, HurtBox->HurtboxType);
 				// switch (HurtBox->HurtboxType)
 				// {
 				// case Head:
@@ -73,12 +74,15 @@ void AWeaponProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 				ReturnToPool();
 			}
 		}
+		else
+		{
+			ReturnToPool();
+		}
 	}
 	else
 	{
 		ReturnToPool();
 	}
-	if ((OtherActor == this) || (OtherComp == nullptr)) return;
 	
 	//if (OtherComp->IsSimulatingPhysics()) OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 	
@@ -126,6 +130,7 @@ void AWeaponProjectile::SetActive(bool i)
 	else
 	{
 		DisableBulletTrail();
+		Shooter = nullptr;
 	}
 }
 

@@ -5,6 +5,8 @@
 #include "MyProject/Interfaces/DamageDealer.h"
 #include "WeaponProjectile.generated.h"
 
+class AWeapon;
+class AGameplayCharacter;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UProjectileData;
@@ -38,18 +40,22 @@ public:
 	void EnableBulletTrail();
 	void DisableBulletTrail();
 
+	UPROPERTY()
+	AGameplayCharacter* Shooter;
+	TSubclassOf<AWeapon> Weapon;
+
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	virtual void SetActive(bool i) override;
+	UPROPERTY()
+	UProjectileData* ProjectileData;
 protected:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
 
-	UPROPERTY()
-	UProjectileData* ProjectileData;
 	
 public:
 	// Called every frame

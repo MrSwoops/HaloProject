@@ -7,6 +7,7 @@
 #include "MyProject/Components/BulletPoolManager.h"
 #include "MyProject/Weapons/Weapon.h"
 #include "MyProject/Weapons/WeaponData/WeaponFireData.h"
+#include "MyProject/Weapons/WeaponProjectiles/WeaponProjectile.h"
 
 void UWeaponFireHandler::Initialize(UWeaponFireData* FireData, UWeaponAmmoHandler* InAmmoHandler, UProjectileData* InProjectileData, UBulletPoolManager* BulletPoolManager)
 {
@@ -112,13 +113,15 @@ void UWeaponFireHandler::FireBullet()
 			FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
 			FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
 			
-			BulletManager->SpawnBullet(SpawnLocation, SpreadRotation, ProjectileData);
+			auto* Bullet = BulletManager->SpawnBullet(SpawnLocation, SpreadRotation, ProjectileData);
 			UFMODBlueprintStatics::PlayEventAtLocation(
 				GetWorld(), // Or a relevant UObject* from your current world context
 				FireSoundEvent,
 				WeaponOwner->GetActorTransform(),
 				true // bAutoPlay: true to start playing immediately
 			);
+			Bullet->Shooter = CharacterOwner;
+			Bullet->Weapon = WeaponOwner->StaticClass();
 			PlayFireAnimation();
 			if (AmmoHandler != nullptr) AmmoHandler->OnShot();
 			//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
@@ -199,7 +202,9 @@ void UPelletFireHandler::FireBullet()
 			FVector RandomDirection = FMath::VRandCone(ForwardVector, ConeHalfAngleRad);
 			FRotator SpreadRotation = RandomDirection.Rotation(); // Get new rotation from direction
 			
-			BulletManager->SpawnBullet(SpawnLocation, SpreadRotation, ProjectileData);
+			auto* Bullet = BulletManager->SpawnBullet(SpawnLocation, SpreadRotation, ProjectileData);
+			Bullet->Shooter = CharacterOwner;
+			Bullet->Weapon = WeaponOwner->StaticClass();
 			//DrawDebugLine(World, SpawnLocation, SpawnLocation + RandomDirection * 1000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
 		}
 		if (AmmoHandler != nullptr) AmmoHandler->OnShot();

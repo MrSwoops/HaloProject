@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 
+struct FDamageLog;
 class AOddBall;
 class AFlag;
 class AGameplayCharacter;
@@ -9,7 +10,9 @@ namespace GlobalEventManager
 {
 	struct FPlayerKilledMessage
 	{
+		const FDamageLog& DamageLog;
 		AGameplayCharacter* Killer;
+		TArray<AGameplayCharacter*> KillAssisters;
 		AGameplayCharacter* Victim;
 	};
 

@@ -20,6 +20,7 @@
 #include "Weapons/Grenade.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Weapons/WeaponData/ProjectileData.h"
+#include "Weapons/WeaponProjectiles/WeaponProjectile.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -77,10 +78,10 @@ void APlayerCharacter::Die()
 	Super::Die();
 }
 
-void APlayerCharacter::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
+void APlayerCharacter::TakeProjectileDamage(AWeaponProjectile* ProjectileInfo, const EHurtboxType& HitRegion)
 {
-	Super::TakeProjectileDamage(BulletData, HitRegion);
-	OnReceiveDamage.Broadcast(EnergyShield->CurrentEnergy, EnergyShield->MaxEnergy, BulletData->Damage);
+	Super::TakeProjectileDamage(ProjectileInfo, HitRegion);
+	OnReceiveDamage.Broadcast(EnergyShield->CurrentEnergy, EnergyShield->MaxEnergy, ProjectileInfo->ProjectileData->Damage);
 }
 
 void APlayerCharacter::TakeDamage(const int32& Damage)
