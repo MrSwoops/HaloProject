@@ -38,9 +38,6 @@ int32 UMovementSensorWidget::NativePaint(const FPaintArgs& Args, const FGeometry
     const FRotator PlayerRot = Owner->Controller->GetControlRotation();
     const int32 PlayerTeam = Owner->Team;
 
-    //------------------------------------------------------------
-    // 1. Get BackgroundImage size and position relative to overlay
-    //------------------------------------------------------------
     const FVector2D BGTopLeft = AllottedGeometry.AbsoluteToLocal(
     BackgroundImage->GetCachedGeometry().GetAbsolutePosition()
 );
@@ -51,12 +48,9 @@ int32 UMovementSensorWidget::NativePaint(const FPaintArgs& Args, const FGeometry
     // Use smaller dimension for circle radius
     const float RadarRadiusPixels = FMath::Min(BGSize.X, BGSize.Y) * 0.5f;
 
-    // World units -> pixels scale
+    // World units to pixels
     const float Scale = RadarRadiusPixels / MovementSensor->ScanRadius;
 
-    //------------------------------------------------------------
-    // 2. Draw detected actors
-    //------------------------------------------------------------
     const FSlateBrush* Brush = &DotBrush;
     const FVector2D DotHalfSize = Brush->ImageSize * 0.5f;
 

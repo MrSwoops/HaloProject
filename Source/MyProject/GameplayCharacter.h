@@ -179,4 +179,13 @@ public:
 
 	USceneComponent* VisionPoint;
 
+	UFUNCTION(BlueprintCallable, Category = "Character Materials")
+	void SetCharacterColor(const FLinearColor& NewColor, int32 MaterialIndex = -1);
+
+private:
+	void AssignDynamicMaterials();
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> DynamicMaterialInstances;
+	
+
 };

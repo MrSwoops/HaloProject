@@ -72,7 +72,43 @@ void AGameplayCharacter::BeginPlay()
 
 	MeshLocation = GetMesh()->GetRelativeLocation();
 	MeshRotation = GetMesh()->GetRelativeRotation();
+
+	AssignDynamicMaterials();
 }
+
+void AGameplayCharacter::AssignDynamicMaterials()
+{
+	if (USkeletalMeshComponent* CharacterMesh = GetMesh())
+	{
+		const int32 NumMaterials = CharacterMesh->GetNumMaterials();
+		for (int32 i = 0; i < NumMaterials; ++i)
+		{
+			if (UMaterialInstanceDynamic* DynamicMaterial = CharacterMesh->CreateDynamicMaterialInstance(i))
+			{
+				DynamicMaterialInstances.Add(DynamicMaterial);
+			}
+		}
+	}
+}
+
+void AGameplayCharacter::SetCharacterColor(const FLinearColor& NewColor, int32 MaterialIndex)
+{
+	if (DynamicMaterialInstances.Num() <= 0) AssignDynamicMaterials();
+	if (MaterialIndex >= 0)
+	{
+		if (DynamicMaterialInstances.IsValidIndex(MaterialIndex) && DynamicMaterialInstances[MaterialIndex])
+			DynamicMaterialInstances[MaterialIndex]->SetVectorParameterValue(FName("Color"), NewColor);
+	}
+	else
+	{
+		for (int i = 0; i < DynamicMaterialInstances.Num(); ++i)
+		{
+			if (DynamicMaterialInstances.IsValidIndex(i) && DynamicMaterialInstances[i])
+				DynamicMaterialInstances[i]->SetVectorParameterValue(FName("Color"), NewColor);
+		}
+	}
+}
+
 
 void AGameplayCharacter::Tick(float DeltaSeconds)
 {

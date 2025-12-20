@@ -1,5 +1,6 @@
 ﻿#include "MultiplayerGameModeBase.h"
 
+#include "ToolBuilderUtil.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyProject/PlayerCharacter.h"
@@ -15,8 +16,27 @@ void AMultiplayerGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AssignTeams();
 	InitializeGameModeUI();
 	StartRound();
+}
+
+void AMultiplayerGameModeBase::AssignTeams()
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGameplayCharacter::StaticClass(), FoundActors);
+	bool IsTeam1 = true;
+	
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, FString::FromInt(FoundActors.Num()));
+	for (AActor* Actor : FoundActors)
+	{
+		AGameplayCharacter* Character = Cast<AGameplayCharacter>(Actor);
+		if (!Character) continue;
+
+		Character->Team = (IsTeam1) ? 1 : 0;
+		Character->SetCharacterColor((IsTeam1) ? FColor::Red : FColor::Blue);
+		IsTeam1 = !IsTeam1;
+	}
 }
 
 

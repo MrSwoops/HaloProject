@@ -44,6 +44,9 @@ public:
 	FOnUpdateMatchTimer UpdateMatchTimerDelegate;
 
 protected:
+	virtual void AssignTeams();
+
+protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	//virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
