@@ -12,6 +12,9 @@ class AMultiplayerGameModeBase : public ABaseGameMode
 {
 	GENERATED_BODY()
 public:
+	static TArray<FString> BotNames; 
+	static FString GetRandomBotName();
+	
 	AMultiplayerGameModeBase();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

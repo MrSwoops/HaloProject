@@ -7,7 +7,7 @@
 
 #include "EnergyShieldShellSKM.h"
 #include "HurtBox.h"
-#include "../PlayerCharacter.h"
+#include "MyProject/Player/PlayerCharacter.h"
 #include "MyProject/Weapons/WeaponData/ProjectileData.h"
 
 // Sets default values for this component's properties

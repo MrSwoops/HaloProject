@@ -10,7 +10,7 @@
 #include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/FirstPersonAnimInstance.h"
 #include "MyProject/Components/MyProjectPickUpComponent.h"
-#include "MyProject/PlayerCharacter.h"
+#include "MyProject/Player/PlayerCharacter.h"
 #include "MyProject/GameModes/BaseGameMode.h"
 #include "MyProject/UI/EnergyWeaponUIWidget.h"
 #include "MyProject/UI/WeaponUIWidget.h"

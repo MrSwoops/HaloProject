@@ -108,7 +108,6 @@ public:
 
 	void BindActions(UEnhancedInputComponent* InpComp);
 	void UnbindActions(UEnhancedInputComponent* InpComp);
-	TMap<UInputAction*, FEnhancedInputActionEventBinding*> Bindings;
 	TMap<FString, FEnhancedInputActionEventBinding*> Bindings2;
 
 protected:

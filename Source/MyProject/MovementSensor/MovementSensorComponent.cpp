@@ -6,7 +6,7 @@
 #include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 #include "MyProject/GameplayCharacter.h"
-#include "MyProject/PlayerCharacter.h"
+#include "MyProject/Player/PlayerCharacter.h"
 
 UMovementSensorComponent::UMovementSensorComponent()
 {

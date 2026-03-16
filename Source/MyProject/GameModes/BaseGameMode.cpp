@@ -4,7 +4,7 @@
 #include "BaseGameMode.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/PlayerCharacter.h"
+#include "MyProject/Player/PlayerCharacter.h"
 #include "MyProject/Components/BulletPoolManager.h"
 #include "MyProject/EventSystem/EventDefinitions.h"
 #include "MyProject/EventSystem/GlobalEventManager.h"
@@ -34,15 +34,28 @@ void ABaseGameMode::BeginPlay()
 void ABaseGameMode::HandlePlayerDeath(const GlobalEventManager::FPlayerKilledMessage& Msg)
 {
 	//(Msg.Killer->Team == Msg.Victim->Team) ? " betrayed " : " killed "
-	FString S = Msg.Killer->CharacterName + " killed " + Msg.Victim->CharacterName;
-	FText T = FText::FromString(S);//(TEXT("%s received kill event: %s killed %s"), *GetName(), Msg.KillerName, Msg.VictimName));
+	FString KillLogMessage;
+	if (!Msg.Killer) // Suicide
+	{
+		KillLogMessage = Msg.Victim->CharacterName + " committed suicide";
+	}
+	else if (Msg.Killer->Team == Msg.Victim->Team) // Betrayal
+	{
+		KillLogMessage = Msg.Killer->CharacterName + " betrayed " + Msg.Victim->CharacterName;
+	}
+	else // Kill
+	{
+		KillLogMessage = Msg.Killer->CharacterName + " killed " + Msg.Victim->CharacterName;
+	}
+	
+	FText KillLogText = FText::FromString(KillLogMessage);//(TEXT("%s received kill event: %s killed %s"), *GetName(), Msg.KillerName, Msg.VictimName));
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(
 			-1,                  // Key: Unique ID for the message (-1 for a new message)
 			5.0f,                // TimeToDisplay: Duration in seconds to display the message
 			FColor::Yellow,      // DisplayColor: Color of the text
-			S // DebugMessage: The string to display
+			KillLogMessage // DebugMessage: The string to display
 		);
 	}
 }

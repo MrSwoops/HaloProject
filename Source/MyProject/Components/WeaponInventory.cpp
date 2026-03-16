@@ -10,9 +10,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "BulletPoolManager.h"
 #include "MyProjectPickUpComponent.h"
-#include "../PlayerCharacter.h"
 #include "../Weapons/Weapon.h"
 #include "MyProject/Equipment.h"
+#include "MyProject/Player/PlayerCharacter.h"
 
 // Sets default values for this component's properties
 UWeaponInventory::UWeaponInventory()

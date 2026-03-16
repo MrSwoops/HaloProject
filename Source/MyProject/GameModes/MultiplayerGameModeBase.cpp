@@ -3,8 +3,16 @@
 #include "ToolBuilderUtil.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/PlayerCharacter.h"
+#include "MyProject/Player/PlayerCharacter.h"
 #include "MyProject/UI/Multiplayer/GameModeStateInfoWidget.h"
+
+TArray<FString> AMultiplayerGameModeBase::BotNames = {"Freddy", "NoobSlayer :)", "Holly", "Kees", "Hamster Beef"};
+
+FString AMultiplayerGameModeBase::GetRandomBotName()
+{
+	return "BOT " + BotNames[rand() % BotNames.Num()];
+}
+
 
 AMultiplayerGameModeBase::AMultiplayerGameModeBase()
 {
@@ -27,7 +35,6 @@ void AMultiplayerGameModeBase::AssignTeams()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGameplayCharacter::StaticClass(), FoundActors);
 	bool IsTeam1 = true;
 	
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, FString::FromInt(FoundActors.Num()));
 	for (AActor* Actor : FoundActors)
 	{
 		AGameplayCharacter* Character = Cast<AGameplayCharacter>(Actor);
