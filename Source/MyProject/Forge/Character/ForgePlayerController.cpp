@@ -4,13 +4,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "ForgeCharacter.h"
 #include "Blueprint/UserWidget.h"
+#include "MyProject/Forge/ForgeBuilderGameMode.h"
+#include "MyProject/Forge/UI/ForgeModeHudWidget.h"
 #include "MyProject/Player/PlayerCharacter.h"
-#include "UI/ForgeModeHudWidget.h"
 
+#pragma region InputSetup
 void AForgePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	UE_LOG(LogTemp, Error, TEXT("SetupInputComponent called"));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(ForgePlayerControls, 0);
@@ -24,18 +25,19 @@ void AForgePlayerController::SetupInputComponent()
 
 void AForgePlayerController::SetupForgePlayerInputs()
 {
-	UE_LOG(LogTemp, Error, TEXT("Set Forge Inputs called"));
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		// Standard Bindings
-		EnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleMove);
-		EnhancedInputComponent->BindAction(HoverAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleHover);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleLook);
+		EnhancedInputComponent->BindAction(ForgeMovementAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleMove);
+		EnhancedInputComponent->BindAction(ForgeSprintAction, ETriggerEvent::Started, this, &AForgePlayerController::HandleForgeStartSprint);
+		EnhancedInputComponent->BindAction(ForgeSprintAction, ETriggerEvent::Completed, this, &AForgePlayerController::HandleForgeStopSprint);
+		EnhancedInputComponent->BindAction(ForgeHoverAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleHover);
+		EnhancedInputComponent->BindAction(ForgeLookAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleLook);
 
-		EnhancedInputComponent->BindAction(ObjectSelectionAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleObjectSelection);
-		EnhancedInputComponent->BindAction(OpenObjectsWindowAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleOpenObjectsWindow);
-		EnhancedInputComponent->BindAction(OpenObjectEditWindowAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleOpenObjectEditWindow);
-		EnhancedInputComponent->BindAction(DeleteObjectAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleDeleteObject);
+		EnhancedInputComponent->BindAction(ForgeObjectSelectionAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleObjectSelection);
+		EnhancedInputComponent->BindAction(ForgeOpenObjectsWindowAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleOpenObjectsWindow);
+		EnhancedInputComponent->BindAction(ForgeOpenObjectEditWindowAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleOpenObjectEditWindow);
+		EnhancedInputComponent->BindAction(ForgeDeleteObjectAction, ETriggerEvent::Triggered, this, &AForgePlayerController::HandleDeleteObject);
 	}
 	else
 	{
@@ -55,11 +57,107 @@ void AForgePlayerController::SetupSharedInputs()
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
+#pragma endregion InputSetup
+#pragma region Possession
+void AForgePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+}
 
+void AForgePlayerController::AcknowledgePossession(APawn* P)
+{
+	Super::Super::AcknowledgePossession(P);
+	if (!IsLocalController()) return;
+
+	if (ForgeCharacter && !Cast<AForgeCharacter>(P))
+	{
+		OnUnPossessForgeCharacter(ForgeCharacter);
+	}
+	else if (PlayerCharacter && !Cast<APlayerCharacter>(P))
+	{
+		OnUnPossessPlayer(PlayerCharacter);
+	}
+	if (APlayerCharacter* InPlayer = Cast<APlayerCharacter>(P)) OnPossessPlayer(InPlayer);
+	else if (AForgeCharacter* InForgeCharacter = Cast<AForgeCharacter>(P)) OnPossessForgeCharacter(InForgeCharacter);
+}
+void AForgePlayerController::OnPossessPlayer(APlayerCharacter* InPossessedPlayer)
+{
+	if (!InPossessedPlayer) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnPossessPlayer with invalid character in ACustomPlayerController::OnPossessPlayer")); return; }
+	Super::OnPossessPlayer(InPossessedPlayer);
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(PlayerControls, 0);
+	}
+	if (ForgeCharacter) PlayerCharacter->SetActorLocation(ForgeCharacter->GetActorLocation());
+	bIsForgeMode = false;
+}
+void AForgePlayerController::OnPossessForgeCharacter(AForgeCharacter* InForgeCharacter)
+{
+	if (!InForgeCharacter) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnPossessVehicle with invalid vehicle in ACustomPlayerController::OnPossessVehicle")); return; }
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->RemoveMappingContext(PlayerControls);
+		Subsystem->AddMappingContext(ForgePlayerControls, 0);
+	}
+	if (!ForgeCharacter) // First time set up
+	{
+		ForgeCharacter = InForgeCharacter;
+		InitializeForgeHud();
+	}
+	SetForgeHudEnabled(true);
+	SetIgnoreMoveInput(false);
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	bShowMouseCursor = false;
+	if (PlayerCharacter) ForgeCharacter->SetActorLocation(PlayerCharacter->GetActorLocation());
+	bIsForgeMode = true;
+}
+void AForgePlayerController::OnUnPossessForgeCharacter(AForgeCharacter* InPossessedVehicle)
+{
+	if (!InPossessedVehicle) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnUnPossessVehicle with invalid vehicle in ACustomPlayerController::OnUnPossessVehicle")); return; }
+	SetForgeHudEnabled(false);
+}
+void AForgePlayerController::OnUnPossessPlayer(APlayerCharacter* InPossessedPlayer)
+{
+	if (!InPossessedPlayer) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnUnPossessPlayer with invalid character in ACustomPlayerController::OnUnPossessPlayer")); return; }
+	Super::OnUnPossessPlayer(InPossessedPlayer);
+}
+#pragma endregion Possession
+
+#pragma region UI
+
+void AForgePlayerController::InitializeForgeHud()
+{
+	if (ForgeHudWidget || !ForgeHudClass) return;
+	
+	ForgeHudWidget = CreateWidget<UForgeModeHudWidget>(this, ForgeHudClass);
+	ForgeHudWidget->AddToViewport();
+}
+
+void AForgePlayerController::SetForgeHudEnabled(const bool& SetEnabled)
+{
+	if (!ForgeHudWidget) return;
+	ForgeHudWidget->SetVisibility(SetEnabled ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+}
+void AForgePlayerController::UpdateInputs(const bool& HoldingObject, const bool& HoveringObject)
+{
+	if (ForgeHudWidget) ForgeHudWidget->UpdateInputDisplay(HoldingObject, HoveringObject);
+}
+
+#pragma endregion UI
+
+#pragma region ForgePlayerFunctions
 void AForgePlayerController::HandleMove(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Error, TEXT("Forge PC Move"));
 	if (ForgeCharacter) ForgeCharacter->Move(Value.Get<FVector2D>());
+}
+void AForgePlayerController::HandleForgeStartSprint(const FInputActionValue& Value)
+{
+	if (ForgeCharacter) ForgeCharacter->StartSprint();
+}
+void AForgePlayerController::HandleForgeStopSprint(const FInputActionValue& Value)
+{
+	if (ForgeCharacter) ForgeCharacter->StopSprint();
 }
 void AForgePlayerController::HandleHover(const FInputActionValue& Value)
 {
@@ -67,13 +165,12 @@ void AForgePlayerController::HandleHover(const FInputActionValue& Value)
 }
 void AForgePlayerController::HandleLook(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Error, TEXT("Forge PC Look"));
 	if (ForgeCharacter) ForgeCharacter->Look(Value);
 }
 
 void AForgePlayerController::HandleObjectSelection(const FInputActionValue& Value)
 {
-
+	if (ForgeCharacter) ForgeCharacter->ObjectGrabDrop();
 }
 void AForgePlayerController::HandleDeleteObject(const FInputActionValue& Value)
 {
@@ -99,8 +196,8 @@ void AForgePlayerController::HandleOpenObjectEditWindow(const FInputActionValue&
 		ForgeHudWidget->SetObjectsWindowEnabled(true);
 	}
 }
-
-
+#pragma endregion ForgePlayerFunctions
+#pragma region SharedFunctions
 void AForgePlayerController::SwitchMode(const FInputActionValue& Value)
 {
 	if (IsForgeMode())
@@ -109,6 +206,7 @@ void AForgePlayerController::SwitchMode(const FInputActionValue& Value)
 		
 		Possess(PlayerCharacter);
 		bIsForgeMode = false;
+		Cast<AForgeBuilderGameMode>(GetWorld()->GetAuthGameMode())->SetForgeObjectsPlayMode(true);
 		return;
 	}
 
@@ -116,8 +214,8 @@ void AForgePlayerController::SwitchMode(const FInputActionValue& Value)
 
 	Possess(ForgeCharacter);
 	bIsForgeMode = true;
+	Cast<AForgeBuilderGameMode>(GetWorld()->GetAuthGameMode())->SetForgeObjectsPlayMode(false);
 }
-
 void AForgePlayerController::HandlePauseInput(const FInputActionValue& Value)
 {
 	if (IsForgeMode() && ForgeHudWidget && ForgeHudWidget->IsSubWindowOpen()) // Close Forge Edit Window
@@ -133,104 +231,4 @@ void AForgePlayerController::HandlePauseInput(const FInputActionValue& Value)
 	// pause
 	//TogglePause();
 }
-
-
-#pragma region Possession
-void AForgePlayerController::OnPossess(APawn* InPawn)
-{
-	Super::OnPossess(InPawn);
-	SetIgnoreMoveInput(false);
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
-
-	bShowMouseCursor = false;
-}
-
-void AForgePlayerController::AcknowledgePossession(APawn* P)
-{
-	Super::AcknowledgePossession(P);
-	if (!IsLocalController()) return;
-
-	if (ForgeCharacter && !Cast<AForgeCharacter>(P))
-	{
-		OnUnPossessForgeCharacter(ForgeCharacter);
-	}
-	else if (PlayerCharacter && !Cast<APlayerCharacter>(P))
-	{
-		OnUnPossessPlayer(PlayerCharacter);
-	}
-	if (APlayerCharacter* InPlayer = Cast<APlayerCharacter>(P)) OnPossessPlayer(InPlayer);
-	else if (AForgeCharacter* InForgeCharacter = Cast<AForgeCharacter>(P)) OnPossessForgeCharacter(InForgeCharacter);
-}
-void AForgePlayerController::OnPossessPlayer(APlayerCharacter* InPossessedPlayer)
-{
-	if (!InPossessedPlayer) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnPossessPlayer with invalid character in ACustomPlayerController::OnPossessPlayer")); return; }
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		// Subsystem->AddMappingContext(StandardControls, 0);
-		Subsystem->RemoveMappingContext(ForgePlayerControls);
-	}
-	if (!PlayerCharacter) // First time set up
-	{
-		PlayerCharacter = InPossessedPlayer;
-		// InitializePlayerHud();
-	}
-	// ShowPlayerHud();
-	if (ForgeCharacter) PlayerCharacter->SetActorLocation(ForgeCharacter->GetActorLocation());
-	bIsForgeMode = false;
-}
-void AForgePlayerController::OnPossessForgeCharacter(AForgeCharacter* InForgeCharacter)
-{
-	UE_LOG(LogTemp, Error, TEXT("PossessedForgeCharacter"));
-	if (!InForgeCharacter) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnPossessVehicle with invalid vehicle in ACustomPlayerController::OnPossessVehicle")); return; }
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		// Subsystem->RemoveMappingContext(StandardControls);
-		Subsystem->AddMappingContext(ForgePlayerControls, 0);
-	}
-	if (!ForgeCharacter) // First time set up
-	{
-		ForgeCharacter = InForgeCharacter;
-		InitializeForgeHud();
-	}
-	SetForgeHudEnabled(true);
-	if (PlayerCharacter) ForgeCharacter->SetActorLocation(PlayerCharacter->GetActorLocation());
-	bIsForgeMode = true;
-}
-
-void AForgePlayerController::OnUnPossess()
-{
-	Super::OnUnPossess();
-	UE_LOG(LogTemp, Error, TEXT("Unpossess"));
-}
-void AForgePlayerController::OnUnPossessForgeCharacter(AForgeCharacter* InPossessedVehicle)
-{
-	UE_LOG(LogTemp, Error, TEXT("UnpossessForgeCharacter"));
-	if (!InPossessedVehicle) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnUnPossessVehicle with invalid vehicle in ACustomPlayerController::OnUnPossessVehicle")); return; }
-	SetForgeHudEnabled(false);
-}
-void AForgePlayerController::OnUnPossessPlayer(APlayerCharacter* InPossessedPlayer)
-{
-	if (!InPossessedPlayer) { UE_LOG(LogTemp, Error, TEXT("Tried to call OnUnPossessPlayer with invalid character in ACustomPlayerController::OnUnPossessPlayer")); return; }
-	// HidePlayerHud();
-}
-#pragma endregion Possession
-
-#pragma region UI
-
-void AForgePlayerController::InitializeForgeHud()
-{
-	if (ForgeHudWidget || !ForgeHudClass) return;
-	
-	ForgeHudWidget = CreateWidget<UForgeModeHudWidget>(this, ForgeHudClass);
-	ForgeHudWidget->AddToViewport();
-}
-
-void AForgePlayerController::SetForgeHudEnabled(const bool& SetEnabled)
-{
-	if (!ForgeHudWidget) return;
-	
-	ForgeHudWidget->SetVisibility(SetEnabled ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-}
-
-#pragma endregion UI
+#pragma endregion SharedFunctions

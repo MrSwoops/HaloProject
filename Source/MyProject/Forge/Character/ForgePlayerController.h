@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "MyProject/Player/CustomPlayerController.h"
 #include "ForgePlayerController.generated.h"
 
 class UForgeModeHudWidget;
@@ -11,7 +12,7 @@ class UInputAction;
 class UInputMappingContext;
 
 UCLASS()
-class AForgePlayerController : public APlayerController
+class AForgePlayerController : public ACustomPlayerController
 {
 	GENERATED_BODY()
 public:
@@ -19,12 +20,11 @@ public:
 #pragma region Possession
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
-	virtual void OnUnPossess() override;
 	virtual void AcknowledgePossession(APawn* P) override;
 	
-	void OnPossessPlayer(APlayerCharacter* InPossessedPlayer);
+	virtual void OnPossessPlayer(APlayerCharacter* InPossessedPlayer) override;
+	virtual void OnUnPossessPlayer(APlayerCharacter* InPossessedPlayer) override;
 	void OnPossessForgeCharacter(AForgeCharacter* PossessedVehicle);
-	void OnUnPossessPlayer(APlayerCharacter* InPossessedPlayer);
 	void OnUnPossessForgeCharacter(AForgeCharacter* PossessedVehicle);
 
 public:
@@ -33,8 +33,6 @@ private:
 	bool bIsForgeMode;
 	UPROPERTY()
 	AForgeCharacter* ForgeCharacter;
-	UPROPERTY()
-	APlayerCharacter* PlayerCharacter;
 #pragma endregion Possession
 
 #pragma region Inputs
@@ -43,28 +41,32 @@ protected:
 	
 #pragma region ForgePlayerActions
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
 	UInputMappingContext* ForgePlayerControls;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* MovementAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* LookAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* HoverAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* ObjectSelectionAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* DeleteObjectAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* OpenObjectsWindowAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
-	UInputAction* OpenObjectEditWindowAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeMovementAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeSprintAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeLookAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeHoverAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeObjectSelectionAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeDeleteObjectAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeOpenObjectsWindowAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|ForgePlayer")
+	UInputAction* ForgeOpenObjectEditWindowAction;
 #pragma endregion ForgePlayerActions
 #pragma region ForgePlayerFunctions
 protected:
 	void SetupForgePlayerInputs();
 	void HandleLook(const FInputActionValue& Value);
 	void HandleMove(const FInputActionValue& Value);
+	void HandleForgeStartSprint(const FInputActionValue& Value);
+	void HandleForgeStopSprint(const FInputActionValue& Value);
 	void HandleHover(const FInputActionValue& Value);
 	void HandleObjectSelection(const FInputActionValue& Value);
 	void HandleDeleteObject(const FInputActionValue& Value);
@@ -75,11 +77,11 @@ protected:
 
 #pragma region SharedActions
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Shared")
 	UInputMappingContext* SharedControls;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Shared")
 	UInputAction* SwitchModeAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|StandardMovement")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Shared")
 	UInputAction* PauseAction;
 #pragma endregion SharedActions
 #pragma region SharedFunctions
@@ -100,6 +102,9 @@ protected:
 	UForgeModeHudWidget* ForgeHudWidget;
 	void InitializeForgeHud();
 	void SetForgeHudEnabled(const bool& SetEnabled);
+public:
+	UForgeModeHudWidget* GetForgeHudWidget() const { return ForgeHudWidget; }
+	void UpdateInputs(const bool& HoldingObject = false, const bool& HoveringObject = false);
 #pragma endregion UI
 	
 };

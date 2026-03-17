@@ -2,18 +2,17 @@
 
 
 #include "ForgeModeHudWidget.h"
-
-#include "ForgeObjectEditMenu.h"
-#include "ForgeObjectsWidget.h"
+#include "ObjectEditWindow/ForgeObjectEditMenu.h"
+#include "ObjectsWindow/ForgeObjectsWidget.h"
 
 void UForgeModeHudWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	if (ObjectsWindow) ObjectsWindow->InitializeCategories();
 	SetObjectEditWindowEnabled(false);
 	SetObjectsWindowEnabled(false);
 	UpdateInputDisplay();
 }
-
 
 void UForgeModeHudWidget::SetObjectEditWindowEnabled(bool Enabled)
 {
@@ -28,6 +27,7 @@ void UForgeModeHudWidget::SetObjectsWindowEnabled(bool Enabled)
 	if (Enabled && bSubWindowOpen) return;
 	ObjectsWindow->SetVisibility(Enabled ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 	InputDisplayBox->SetVisibility(Enabled ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
+	ObjectsWindow->WidgetSwitcher->SetActiveWidgetIndex(0);
 	bSubWindowOpen = Enabled;
 }
 

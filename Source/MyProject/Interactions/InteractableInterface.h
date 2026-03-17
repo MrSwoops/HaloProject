@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "InteractableInterface.generated.h"
 
+class AForgeCharacter;
 class ACustomCharacter;
 class UInteractableComponent;
 // This class does not need to be modified.
@@ -26,8 +27,8 @@ class IInteractableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteractableInterface")
-	//void OnInteract(ACustomCharacter* InCharacter);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteractableInterface")
+	void OnInteract(AForgeCharacter* InCharacter);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteractableInterface")
 	void GetInteractionSettings(FInteractionSettings& OutSettings);
