@@ -22,3 +22,15 @@ void AForgeBuilderGameMode::SetForgeObjectsPlayMode(bool IsPlayMode)
 		ForgeObject->SetPlayMode(IsPlayMode);
 	}
 }
+
+void AForgeBuilderGameMode::AddForgeObject(AForgeObject* ForgeObject)
+{
+	if (!ForgeObject) return;
+	ForgeObjects.AddUnique(ForgeObject);
+}
+
+void AForgeBuilderGameMode::RemoveForgeObject(AForgeObject* ForgeObject)
+{
+	if (!ForgeObject) return;
+	ForgeObjects.Remove(ForgeObject);
+}

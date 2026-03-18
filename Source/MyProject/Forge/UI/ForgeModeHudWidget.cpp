@@ -33,7 +33,6 @@ void UForgeModeHudWidget::SetObjectsWindowEnabled(bool Enabled)
 
 void UForgeModeHudWidget::UpdateInputDisplay(const bool& HoldingObject, const bool& HoveringObject)
 {
-	if (IsSubWindowOpen()) return;
 	if (HoldingObject) // have object
 	{
 		DeleteObjectInputDisplay->SetVisibility(ESlateVisibility::Visible);

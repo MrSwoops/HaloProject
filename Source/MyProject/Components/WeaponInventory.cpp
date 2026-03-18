@@ -93,43 +93,6 @@ void UWeaponInventory::PickUpEquipment(AEquipment* Equipment)
 	
 }
 
-
-void UWeaponInventory::PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon)
-{
-	if (PrimaryWeapon)
-	{
-		if (SecondaryWeapon)
-		{
-			//Drop current weapon and pick up new weapon
-			CurrentWeapon->UnbindActions(EnhancedInputComponent);
-			AWeapon* OldWeapon = CurrentWeapon;
-			if (CurrentWeapon == PrimaryWeapon)
-			{
-				PrimaryWeapon = Weapon;
-				CurrentWeapon = Weapon;
-				CurrentWeapon->BindActions(EnhancedInputComponent);
-			} else
-			{
-				SecondaryWeapon = Weapon;
-				CurrentWeapon = Weapon;
-				CurrentWeapon->BindActions(EnhancedInputComponent);
-			}
-			OldWeapon->DropWeapon();
-		}
-		else // Add to secondary and swap
-		{
-			SecondaryWeapon = Weapon;
-			SwapWeapons(EnhancedInputComponent);
-		}
-	}
-	else
-	{
-		PrimaryWeapon = Weapon;
-		CurrentWeapon = Weapon;
-		CurrentWeapon->BindActions(EnhancedInputComponent);
-	}
-}
-
 void UWeaponInventory::PickUpWeapon(AWeapon* Weapon)
 {
 	if (PrimaryWeapon)
@@ -254,6 +217,13 @@ void UWeaponInventory::SwapWeapons()
 {
 	if (PrimaryWeapon && SecondaryWeapon)
 	{
+		if (auto* PlayerChar = Cast<APlayerCharacter>(CurrentWeapon->Character))
+		{
+			if (UAnimInstance* AnimInstance = PlayerChar->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+			{
+				AnimInstance->StopAllMontages(0.0f);
+			}
+		}
 		CurrentWeapon->DisableWeapon();
 		if (CurrentWeapon == PrimaryWeapon)
 		{
@@ -266,32 +236,6 @@ void UWeaponInventory::SwapWeapons()
 			CurrentWeapon = PrimaryWeapon;
 		}
 		CurrentWeapon->EnableWeapon();
-	}
-}
-
-void UWeaponInventory::SwapWeapons(UEnhancedInputComponent* EnhancedInputComponent)
-{
-	if (PrimaryWeapon && SecondaryWeapon)
-	{
-		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(CurrentWeapon->Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
-		{
-			AnimInstance->StopAllMontages(0.0f);
-		}
-		CurrentWeapon->DisableWeapon();
-		CurrentWeapon->UnbindActions(EnhancedInputComponent);
-		
-		if (CurrentWeapon == PrimaryWeapon)
-		{
-			if (SecondaryWeapon == nullptr) return; // No secondary to swap to
-			CurrentWeapon = SecondaryWeapon;
-		}
-		else
-		{
-			if (PrimaryWeapon == nullptr) return; // No primary to swap to
-			CurrentWeapon = PrimaryWeapon;
-		}
-		CurrentWeapon->EnableWeapon();
-		CurrentWeapon->BindActions(EnhancedInputComponent);
 	}
 }
 

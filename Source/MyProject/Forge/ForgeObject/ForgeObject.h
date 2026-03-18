@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "ForgeObjectSettings.h"
 #include "MyProject/Interactions/InteractableInterface.h"
 #include "ForgeObject.generated.h"
 
@@ -22,6 +23,9 @@ public:
 	UStaticMeshComponent* ForgePreviewMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character", meta=(AllowPrivateAccess="true"))
 	UChildActorComponent* GameplayObject;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character", meta=(AllowPrivateAccess="true"))
+	FObjectSettings ObjectSettings;
 
 protected:
 	virtual void BeginPlay() override;

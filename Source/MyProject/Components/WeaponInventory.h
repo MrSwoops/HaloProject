@@ -69,7 +69,6 @@ private:
 		
 public:
 	void PickUpWeapon(AWeapon* Weapon);
-	void PickUpWeapon(UEnhancedInputComponent* EnhancedInputComponent, AWeapon* Weapon);
 	UFUNCTION()
 	bool ScavageWeapon(AWeapon* Weapon);
 
@@ -88,7 +87,6 @@ public:
 
 	void TryReloadWeapon();
 	void SwapWeapons();
-	void SwapWeapons(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void PickUpEquipment(AEquipment* Equipment);
 

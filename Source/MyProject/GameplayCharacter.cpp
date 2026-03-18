@@ -311,23 +311,19 @@ void AGameplayCharacter::SwapGrenades()
 
 void AGameplayCharacter::SwapWeapons()
 {
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(GetController()->InputComponent))
-	{
-		WeaponInventory->SwapWeapons(EnhancedInputComponent);
-	}
-	else
-		WeaponInventory->SwapWeapons();
+	WeaponInventory->SwapWeapons();
 }
-
+void AGameplayCharacter::FirePressed()
+{
+	if (WeaponInventory->CurrentWeapon) WeaponInventory->CurrentWeapon->FirePressed();	
+}
+void AGameplayCharacter::FireReleased()
+{
+	if (WeaponInventory->CurrentWeapon) WeaponInventory->CurrentWeapon->FireReleased();
+}
 void AGameplayCharacter::PickUpWeapon(AWeapon* Weapon)
 {
-	if (Cast<APlayerCharacter>(this))
-	{
-		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(GetController()->InputComponent))
-			WeaponInventory->PickUpWeapon(EnhancedInputComponent, Weapon);
-	}
-	else
-		WeaponInventory->PickUpWeapon(Weapon);
+	WeaponInventory->PickUpWeapon(Weapon);
 }
 
 bool AGameplayCharacter::ScavageWeapon(AWeapon* Weapon) // Returns true if scavenged weapon is empty and needs to be deleted

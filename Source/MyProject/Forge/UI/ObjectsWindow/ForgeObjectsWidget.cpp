@@ -3,6 +3,8 @@
 
 #include "ForgeObjectsWidget.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "MyProject/Forge/ForgeBuilderGameMode.h"
 #include "MyProject/Forge/Character/ForgeCharacter.h"
 #include "MyProject/Forge/Character/ForgePlayerController.h"
 #include "MyProject/Forge/ForgeObject/ForgeObject.h"
@@ -40,6 +42,16 @@ void UForgeObjectsWidget::InitializeCategory(UCommonHierarchicalScrollBox* InScr
 		ContentButton->OnClicked().AddLambda([this, ObjectClass]()
 		{
 			SpawnForgeObject(ObjectClass);
+			if (auto* World = GetWorld())
+			{
+				if (auto* PlayerController = World->GetFirstPlayerController())
+				{
+					PlayerController->SetIgnoreMoveInput(false);
+					FInputModeGameOnly InputMode;
+					PlayerController->SetInputMode(InputMode);
+					PlayerController->bShowMouseCursor = false;
+				}
+			}
 		});
 		InScrollBox->AddChild(ContentButton);
 	}
@@ -54,9 +66,11 @@ void UForgeObjectsWidget::SpawnForgeObject(TSubclassOf<AForgeObject> ObjectClass
 	
 	const FVector SpawnLocation = ForgeCharacter->GetActorLocation() + (ForgeCharacter->GetActorForwardVector() * 300);
 	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	auto* ForgeObject = GetWorld()->SpawnActor<AForgeObject>(ObjectClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 	if (!ForgeObject) return;
 
+	if (auto* GM = Cast<AForgeBuilderGameMode>(GetWorld()->GetAuthGameMode())) GM->AddForgeObject(ForgeObject);
 	ForgeCharacter->PickupObject(ForgeObject);
 	Cast<AForgePlayerController>(GetOwningPlayer())->GetForgeHudWidget()->SetObjectsWindowEnabled(false);
 	 

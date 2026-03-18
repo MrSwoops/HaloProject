@@ -103,13 +103,6 @@ public:
 	UFUNCTION()
 	void DropWeapon();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* FireAction;
-
-	void BindActions(UEnhancedInputComponent* InpComp);
-	void UnbindActions(UEnhancedInputComponent* InpComp);
-	TMap<FString, FEnhancedInputActionEventBinding*> Bindings2;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

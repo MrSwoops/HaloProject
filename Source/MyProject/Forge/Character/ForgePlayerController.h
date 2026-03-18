@@ -16,7 +16,12 @@ class AForgePlayerController : public ACustomPlayerController
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Forge")
+	TSubclassOf<APlayerCharacter> PlayerCharacterClass;
 
+protected:
+	virtual void BeginPlay() override;
+	
 #pragma region Possession
 protected:
 	virtual void OnPossess(APawn* InPawn) override;

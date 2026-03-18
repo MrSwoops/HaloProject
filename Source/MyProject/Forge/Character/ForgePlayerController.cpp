@@ -8,6 +8,23 @@
 #include "MyProject/Forge/UI/ForgeModeHudWidget.h"
 #include "MyProject/Player/PlayerCharacter.h"
 
+
+void AForgePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	if (PlayerCharacterClass && !PlayerCharacter)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		FVector NewSpawnLocation = FVector::ZeroVector;
+		auto* NewPlayerCharacter = GetWorld()->SpawnActor<APlayerCharacter>(PlayerCharacterClass, NewSpawnLocation, FRotator::ZeroRotator, SpawnParams);
+		if (!NewPlayerCharacter) return;
+		Possess(NewPlayerCharacter);
+		Possess(ForgeCharacter);
+	}
+}
+
+
 #pragma region InputSetup
 void AForgePlayerController::SetupInputComponent()
 {
@@ -86,6 +103,7 @@ void AForgePlayerController::OnPossessPlayer(APlayerCharacter* InPossessedPlayer
 	Super::OnPossessPlayer(InPossessedPlayer);
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
+		Subsystem->RemoveMappingContext(ForgePlayerControls);
 		Subsystem->AddMappingContext(PlayerControls, 0);
 	}
 	if (ForgeCharacter) PlayerCharacter->SetActorLocation(ForgeCharacter->GetActorLocation());
@@ -174,10 +192,11 @@ void AForgePlayerController::HandleObjectSelection(const FInputActionValue& Valu
 }
 void AForgePlayerController::HandleDeleteObject(const FInputActionValue& Value)
 {
-	
+	if (ForgeCharacter) ForgeCharacter->DeleteObject();
 }
 void AForgePlayerController::HandleOpenObjectsWindow(const FInputActionValue& Value)
 {
+	if (!ForgeCharacter || ForgeCharacter->HoldingObject()) return;
 	if (ForgeHudWidget)
 	{
 		SetIgnoreMoveInput(true);
@@ -188,12 +207,13 @@ void AForgePlayerController::HandleOpenObjectsWindow(const FInputActionValue& Va
 }
 void AForgePlayerController::HandleOpenObjectEditWindow(const FInputActionValue& Value)
 {
+	if (!ForgeCharacter || !ForgeCharacter->HoldingObject()) return;
 	if (ForgeHudWidget)
 	{
 		SetIgnoreMoveInput(true);
 		FInputModeGameAndUI InputMode;
 		SetInputMode(InputMode);
-		ForgeHudWidget->SetObjectsWindowEnabled(true);
+		ForgeHudWidget->SetObjectEditWindowEnabled(true);
 	}
 }
 #pragma endregion ForgePlayerFunctions

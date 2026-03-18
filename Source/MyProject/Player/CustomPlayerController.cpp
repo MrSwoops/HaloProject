@@ -36,6 +36,8 @@ void ACustomPlayerController::SetupPlayerInputs()
 		EnhancedInputComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandlePlayerThrowNade);
 
 		EnhancedInputComponent->BindAction(SwapWeaponsAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandlePlayerSwapWeapons);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ACustomPlayerController::HandlePlayerFirePressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ACustomPlayerController::HandlePlayerFireReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandlePlayerReload);
 		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandlePlayerMelee);
 	}
@@ -148,6 +150,14 @@ void ACustomPlayerController::HandlePlayerThrowNade(const FInputActionValue& Val
 void ACustomPlayerController::HandlePlayerSwapWeapons(const FInputActionValue& Value)
 {
 	if (PlayerCharacter) PlayerCharacter->SwapWeapons();
+}
+void ACustomPlayerController::HandlePlayerFirePressed(const FInputActionValue& Value)
+{
+	if (PlayerCharacter) PlayerCharacter->FirePressed();
+}
+void ACustomPlayerController::HandlePlayerFireReleased(const FInputActionValue& Value)
+{
+	if (PlayerCharacter) PlayerCharacter->FireReleased();
 }
 void ACustomPlayerController::HandlePlayerReload(const FInputActionValue& Value)
 {

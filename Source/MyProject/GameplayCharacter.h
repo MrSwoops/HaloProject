@@ -168,6 +168,8 @@ public:
 	virtual void TryInteract();
 
 	virtual void SwapWeapons();
+	virtual void FirePressed();
+	virtual void FireReleased();
 	virtual void SwapGrenades();
 	virtual void ThrowGrenade();
 

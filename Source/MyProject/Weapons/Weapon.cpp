@@ -122,8 +122,6 @@ void AWeapon::DropWeapon()
 {
 	if (IsPlayerOwned)
 	{
-		if (auto* IC = Cast<UEnhancedInputComponent>(Character->GetController()->InputComponent))
-		UnbindActions(IC);
 		IsPlayerOwned = false;
 	}
 	if (FireHandler)
@@ -153,36 +151,6 @@ void AWeapon::DropWeapon()
 		SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 		PickUpComp->SetCollisionProfileName(FName("Interaction"));
 	}
-}
-
-void AWeapon::BindActions(UEnhancedInputComponent* InpComp)
-{
-	Bindings2.Add("FirePressedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Started, this, &AWeapon::FirePressed));
-	Bindings2.Add("FireReleasedAction", &InpComp->BindAction(FireAction, ETriggerEvent::Completed, this, &AWeapon::FireReleased));
-}
-void AWeapon::UnbindActions(UEnhancedInputComponent* InpComp)
-{
-	FEnhancedInputActionEventBinding** FirePressedBinding = Bindings2.Find("FirePressedAction");
-	if (FirePressedBinding && *FirePressedBinding)
-	{
-		InpComp->RemoveBinding(*(*FirePressedBinding));
-		Bindings2.Remove("FirePressedAction");
-	}
-
-	if (FireHandler->IsFireHeld) {FireHandler->FireReleased();}
-	FEnhancedInputActionEventBinding** FireReleasedBinding = Bindings2.Find("FireReleasedAction");
-	if (FireReleasedBinding && *FireReleasedBinding)
-	{
-		InpComp->RemoveBinding(*(*FireReleasedBinding));
-		Bindings2.Remove("FireReleasedAction");
-	}
-
-	for (const auto& Binding : Bindings2)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Binding: %s"), *Binding.Key);
-	}
-	Bindings2.Empty();
-
 }
 
 void AWeapon::DisableWeapon()

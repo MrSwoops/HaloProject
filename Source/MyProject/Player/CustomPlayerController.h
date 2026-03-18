@@ -60,6 +60,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input|Player", meta=(AllowPrivateAccess = "true"))
 	UInputAction* SwapWeaponsAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input|Player", meta=(AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input|Player", meta=(AllowPrivateAccess = "true"))
 	UInputAction* ReloadAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input|Player", meta=(AllowPrivateAccess = "true"))
 	UInputAction* MeleeAction;
@@ -83,6 +85,8 @@ protected:
 	void HandlePlayerThrowNade(const FInputActionValue& Value);
 
 	void HandlePlayerSwapWeapons(const FInputActionValue& Value);
+	void HandlePlayerFirePressed(const FInputActionValue& Value);
+	void HandlePlayerFireReleased(const FInputActionValue& Value);
 	void HandlePlayerReload(const FInputActionValue& Value);
 	void HandlePlayerMelee(const FInputActionValue& Value);
 	void HandlePlayerUseAbility(const FInputActionValue& Value);

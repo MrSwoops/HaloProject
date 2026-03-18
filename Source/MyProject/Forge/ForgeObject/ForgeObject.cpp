@@ -38,11 +38,37 @@ void AForgeObject::SetPlayMode(const bool& IsPlayMode)
 {
 	if (IsPlayMode)
 	{
+		if (!GameplayObject->GetChildActor())
+		{
+			GameplayObject->CreateChildActor();
+		}
+		AActor* Child = GameplayObject->GetChildActor();
+		if (Child)
+		{
+			Child->SetActorTransform(ForgePreviewMesh->GetComponentTransform());
+
+			Child->SetActorHiddenInGame(false);
+			Child->SetActorEnableCollision(true);
+			Child->SetActorTickEnabled(true);
+		}
+
 		ForgePreviewMesh->SetVisibility(false);
-		GameplayObject->SetVisibility(true);
+		ForgePreviewMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ForgePreviewMesh->SetComponentTickEnabled(false);
 		return;
 	}
 	
-	GameplayObject->SetVisibility(false);
+	AActor* Child = GameplayObject->GetChildActor();
+	if (Child)
+	{
+		// Disable gameplay actor
+		Child->SetActorHiddenInGame(true);
+		Child->SetActorEnableCollision(false);
+		Child->SetActorTickEnabled(false);
+	}
+
+	// Enable preview mesh
 	ForgePreviewMesh->SetVisibility(true);
+	ForgePreviewMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	ForgePreviewMesh->SetComponentTickEnabled(true);
 }
