@@ -8,7 +8,7 @@ void ATeamSlayerGameMode::HandlePlayerDeath(const GlobalEventManager::FPlayerKil
 	Super::HandlePlayerDeath(Msg);
 	if (Msg.Killer == nullptr || Msg.Victim->Team == Msg.Killer->Team)
 	{
-		AddPoints(Msg.Killer->Team, 1);//AddPoints(Msg.Victim->Team, -1);
+		//AddPoints(Msg.Killer->Team, 1);//AddPoints(Msg.Victim->Team, -1);
 	}
 	else
 	{

@@ -11,7 +11,7 @@ struct FForgeObjectData
 {
 	GENERATED_BODY()
 	FForgeObjectData(){}
-	FForgeObjectData(const FVector& InPosition, const FRotator& InRotation, const int32& InItemID, const FForgeObjectSettings& InObjectSettings)
+	FForgeObjectData(const FVector& InPosition, const FRotator& InRotation, const int32& InItemID, const FObjectSettings& InObjectSettings)
 	{
 		Position = InPosition;
 		Rotation = InRotation;
@@ -23,7 +23,7 @@ struct FForgeObjectData
 	UPROPERTY(SaveGame)
 	FRotator Rotation = FRotator::ZeroRotator;
 	int32 ItemID = 0;
-	FForgeObjectSettings ObjectSettings = FForgeObjectSettings();
+	FObjectSettings ObjectSettings = FObjectSettings();
 };
 
 UCLASS()
