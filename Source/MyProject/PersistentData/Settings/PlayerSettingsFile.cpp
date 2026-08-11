@@ -55,7 +55,7 @@ float UPlayerSettingsFile::GetVolumeDB(float InVolume)
 
 void UPlayerSettingsFile::RetrieveVCAs()
 {
-	auto* masVCA = LoadObject<UFMODVCA>(nullptr, TEXT("/Game/FMOD/VCAs/Master_VCA.Master_VCA'"));
+	auto* masVCA = LoadObject<UFMODVCA>(nullptr, TEXT("/Game/FMOD/VCAs/Master_VCA.Master_VCA"));
 	if (masVCA) MasterVca = masVCA;
 	auto* musVCA = LoadObject<UFMODVCA>(nullptr, TEXT("/Game/FMOD/VCAs/Music_VCA.Music_VCA"));
 	if (musVCA) MusicVca = musVCA;

@@ -46,6 +46,7 @@ public:
 	void NextOption();
 	void PreviousOption();
 	void UpdateDisplay();
+	UFUNCTION(BlueprintCallable)
 	void SetOption(const int32 Index);
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

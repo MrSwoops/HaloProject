@@ -5,12 +5,13 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "MyProject/Components/WeaponInventory.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/CharacterAnimInstance.h"
 #include "MyProject/AI/BaseAIBlackboardKeyNames.h"
+#include "MyProject/Characters/CharacterAnimInstance.h"
+#include "MyProject/Combat/DamageMessage.h"
 #include "MyProject/Weapons/Weapon.h"
+#include "MyProject/Weapons/WeaponInventory.h"
 
 AAICharacter::AAICharacter()
 {
@@ -193,24 +194,24 @@ void AAICharacter::ExitCombat()
 	}
 }
 
-void AAICharacter::OnStartTakingFire(AGameplayCharacter* Attacker, float Damage)
+void AAICharacter::OnStartTakingFire(const FDamageMessage& DmgMsg)
 {
-	Super::OnStartTakingFire();
+	Super::OnStartTakingFire(DmgMsg);
 	if (auto* AICont = Cast<AAIController>(GetController()))
 	{
 		UBlackboardComponent* BlackboardComp = AICont->GetBlackboardComponent();
 		BlackboardComp->SetValueAsBool(UnderFireKeyName, true);
-		if (Attacker != nullptr)
+		if (DmgMsg.Attacker != nullptr)
 		{
 			if (!IsInCombat || !BlackboardComp->GetValueAsBool(HasLOSKeyName))
 			{
 				BlackboardComp->SetValueAsBool(InCombatKeyName, true);
-				ThreatTable.AddToTop(Attacker);
-				LookAtActor(Attacker, true);
+				ThreatTable.AddToTop(DmgMsg.Attacker);
+				LookAtActor(DmgMsg.Attacker, true);
 			}
 			else
 			{
-				ThreatTable.AddThreat(Attacker, Damage);
+				ThreatTable.AddThreat(DmgMsg.Attacker, DmgMsg.Damage);
 			}
 		}
 	}

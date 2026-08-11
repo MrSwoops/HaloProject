@@ -25,7 +25,9 @@ public:
 
 	virtual void OnInteract(AGameplayCharacter* Character);
 
-	bool Enabled = true;
+	bool bEnabled = true;
+
+	virtual void SetEnabled(bool bInEnabled);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnInteract OnInteractDelegate;

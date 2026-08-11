@@ -3,7 +3,8 @@
 
 #include "CharacterInteractableComponent.h"
 
-#include "../GameplayCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
+
 
 // Sets default values for this component's properties
 UCharacterInteractableComponent::UCharacterInteractableComponent()
@@ -27,7 +28,7 @@ void UCharacterInteractableComponent::BeginPlay()
 void UCharacterInteractableComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Checking if it is a First Person Character overlapping
-	if (!Enabled) return;
+	if (!bEnabled) return;
 	if(AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
 	{
 		if (InteractOnAreaEnter)
@@ -43,7 +44,7 @@ void UCharacterInteractableComponent::OnSphereBeginOverlap(UPrimitiveComponent* 
 
 void UCharacterInteractableComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (!Enabled) return;
+	if (!bEnabled) return;
 	if(AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
 	{
 		Character->RemoveInteractable(this);
@@ -56,3 +57,9 @@ void UCharacterInteractableComponent::OnInteract(AGameplayCharacter* Character)
 	OnInteractDelegate.Broadcast(Character);
 }
 
+void UCharacterInteractableComponent::SetEnabled(bool bInEnabled)
+{
+	bEnabled = bInEnabled;
+	SetActive(bInEnabled);
+	SetCollisionEnabled((bInEnabled) ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+}

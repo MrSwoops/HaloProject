@@ -3,7 +3,7 @@
 #include "ToolBuilderUtil.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/Player/PlayerCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
 #include "MyProject/UI/Multiplayer/GameModeStateInfoWidget.h"
 
 TArray<FString> AMultiplayerGameModeBase::BotNames = {"Freddy", "NoobSlayer :)", "Holly", "Kees", "Hamster Beef"};

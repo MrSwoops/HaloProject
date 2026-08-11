@@ -4,21 +4,20 @@
 #include "Weapon.h"
 
 #include "../Components/MyProjectPickUpComponent.h"
-#include "../GameplayCharacter.h"
-#include "../Components/BulletPoolManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
-#include "../FirstPersonAnimInstance.h"
 #include "../UI/WeaponUIWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
-#include "MyProject/CharacterAnimInstance.h"
-#include "MyProject/Player/PlayerCharacter.h"
 #include "FMODBlueprintStatics.h"
+#include "WeaponInventory.h"
+#include "MyProject/Characters/CharacterAnimInstance.h"
+#include "MyProject/Characters/Player/FirstPersonAnimInstance.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 #include "MyProject/GameModes/BaseGameMode.h"
 #include "WeaponData/WeaponAmmoData.h"
 #include "WeaponData/WeaponFireData.h"
@@ -46,9 +45,8 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	GameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	PickUpComp->AttachedWeapon = this;
-	PickUpComp->OnInteractDelegate.AddDynamic(this, &AWeapon::AttachWeapon);
+	PickUpComp->OnInteractDelegate.AddDynamic(this, &AWeapon::OnPickup);
 	//SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 
 	InitializeWeapon();
@@ -60,31 +58,9 @@ void AWeapon::Tick(float DeltaSeconds)
 	if (FireHandler && FireHandler->IsFireHeld) FireHandler->FireHeld(DeltaSeconds);
 	if (AmmoHandler) AmmoHandler->UpdateAmmoHandler(DeltaSeconds);
 }
-
-void AWeapon::Reload()
+void AWeapon::OnPickup(AGameplayCharacter* TargetCharacter)
 {
-	if (AmmoHandler != nullptr) AmmoHandler->TriggerReload();
-}
-
-void AWeapon::Melee()
-{
-	FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-		GetWorld(), // Or a relevant UObject* from your current world context
-		MeleeSoundEvent,
-		GetActorTransform(),
-		true // bAutoPlay: true to start playing immediately
-	);
-	if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(Character)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
-	{
-		if (FPMeleeAnimations.Num() <= 0) return;
-		UAnimMontage* RandomMeleeAnim = FPMeleeAnimations[FMath::RandRange(0, FPMeleeAnimations.Num() - 1)];
-		AnimInstance->Montage_Play(RandomMeleeAnim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-	}
-}
-
-void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
-{
-	if (!TargetCharacter) return;
+	if (!TargetCharacter) { UE_LOG(LogTemp, Warning, TEXT("Tried to pick up weapon with an invalid character in AWeapon::OnPickup")); return; }
 	Character = TargetCharacter;
 	if (FireHandler) FireHandler->CharacterOwner = TargetCharacter;
 	if (AmmoHandler) AmmoHandler->CharacterOwner = TargetCharacter;
@@ -93,37 +69,42 @@ void AWeapon::AttachWeapon(AGameplayCharacter* TargetCharacter)
 	SkeletalMeshComp->SetSimulatePhysics(false);
 	SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
-	Character->PickUpWeapon(this);
-	
-	FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;//(, true);
-	AttachmentRules.bWeldSimulatedBodies = true;
-	if (APlayerCharacter* PC = Cast<APlayerCharacter>(TargetCharacter))
+	TargetCharacter->WeaponInventory->PickUpWeapon(this);
+}
+void AWeapon::SetPlayerOwned(const bool& bPlayerOwned)
+{
+	IsPlayerOwned = bPlayerOwned;
+	if (FireHandler) FireHandler->IsPlayerOwned = bPlayerOwned;
+	if (AmmoHandler) AmmoHandler->IsPlayerOwned = bPlayerOwned;
+	if (bPlayerOwned)
 	{
-		IsPlayerOwned = true;
-		if (FireHandler) FireHandler->IsPlayerOwned = true;
-		if (AmmoHandler) AmmoHandler->IsPlayerOwned = true;
-		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(PC->GetController()), UIData->WeaponUIClass);
+		WeaponUI = CreateWidget<UWeaponUIWidget>(Cast<APlayerController>(Character->GetController()), UIData->WeaponUIClass);
 		if (AmmoHandler)
 		{
 			if (WeaponUI) AmmoHandler->AttachWeaponUI(WeaponUI);
 		}
-		AttachToComponent(PC->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
-		Cast<UFirstPersonAnimInstance>(PC->GetMesh1P()->GetAnimInstance())->HasRifle = true;
 	}
 	else
 	{
 		if (FireHandler) FireHandler->AimPoint = &Cast<UCharacterAnimInstance>(Character->GetMesh()->GetAnimInstance())->TargetLookRigPoint;
-		AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
 	}
-	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(TargetCharacter->GetMesh()->GetAnimInstance())) AnimInstance->HasRifle = true;
+}
+
+void AWeapon::Reload()
+{
+	if (AmmoHandler != nullptr) AmmoHandler->TriggerReload();
+}
+
+void AWeapon::SetMeleeHitBox(const bool& bActive)
+{
+	
 }
 
 void AWeapon::DropWeapon()
 {
-	if (IsPlayerOwned)
-	{
-		IsPlayerOwned = false;
-	}
+	IsPlayerOwned = false;
+	CurrentStorageSocket = "";
+	GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	if (FireHandler)
 	{
 		FireHandler->OnWeaponDropped();
@@ -139,7 +120,6 @@ void AWeapon::DropWeapon()
 	}
 	
 	Character = nullptr;
-	GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	if (AmmoHandler == nullptr || AmmoHandler->IsEmpty())
 	{
 		this->Destroy();
@@ -151,19 +131,6 @@ void AWeapon::DropWeapon()
 		SkeletalMeshComp->SetCollisionProfileName(FName("DroppedWeapon"));
 		PickUpComp->SetCollisionProfileName(FName("Interaction"));
 	}
-}
-
-void AWeapon::DisableWeapon()
-{
-	SkeletalMeshComp->SetVisibility(false);
-	if (IsPlayerOwned && WeaponUI) WeaponUI->SetVisibility(ESlateVisibility::Hidden);
-	if (AmmoHandler) AmmoHandler->CancelReload();
-}
-
-void AWeapon::EnableWeapon()
-{
-	SkeletalMeshComp->SetVisibility(true);
-	if (IsPlayerOwned && WeaponUI) WeaponUI->SetVisibility(ESlateVisibility::Visible);
 }
 
 bool AWeapon::IsSameWeaponType(AWeapon* OtherWeapon)

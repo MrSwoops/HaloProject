@@ -5,9 +5,12 @@
 #include "NiagaraSystem.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "MyProject/Components/HurtBox.h"
-#include "MyProject/Interfaces/IDamageable.h"
 #include "../WeaponData/ProjectileData.h"
+#include "MyProject/Characters/GameplayCharacter.h"
+#include "MyProject/Combat/DamageMessage.h"
+#include "MyProject/Combat/HurtBox.h"
+#include "MyProject/Combat/Interfaces/Damageable.h"
+#include "MyProject/Combat/Interfaces/IDamageable.h"
 
 
 AWeaponProjectile::AWeaponProjectile() 
@@ -41,52 +44,28 @@ void AWeaponProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	if (OtherComp && OtherActor)
 	{
 		//if ((OtherActor == this) || (OtherComp == nullptr)) return;
-		if (auto* Damageable = Cast<IIDamageable>(OtherActor))
+		if (OtherActor->Implements<UDamageable>())
 		{
+			FDamageMessage DmgMsg = FDamageMessage();
+			DmgMsg.Damage = Execute_GetDamage(this);
+			DmgMsg.Attacker = Shooter;
+			DmgMsg.HitDirection = GetActorForwardVector();
+			DmgMsg.CritBehavior = ProjectileData->CritHitBehavior;
+			
 			if (UHurtBox* HurtBox = Cast<UHurtBox>(OtherComp))
 			{
-				Damageable->TakeProjectileDamage(this, HurtBox->HurtboxType);
-				
-				if (ProjectileData->HasPenetration && HurtBox->HurtboxType != EHurtboxType::Head)
-					ReturnToPool();
-				else
-					ReturnToPool();
-				
-				// switch (HurtBox->HurtboxType)
-				// {
-				// case Head:
-				// 	Damageable->TakeDamage(BulletData::);
-				// 	break;
-				// case Limb:
-				// 	Damageable->TakeDamage(this);
-				// 	break;
-				// case Torso:
-				// 	Damageable->TakeDamage(this);
-				// 	break;
-				// default:
-				// 	Damageable->TakeDamage(this);
-				// 	break;
-				// };
+				DmgMsg.HitPart = HurtBox->HurtboxType;
 			}
-			else
-			{
-				Damageable->TakeDamage(this);
-				ReturnToPool();
-			}
-		}
-		else
-		{
-			ReturnToPool();
+			IDamageable::Execute_TakeDamage(OtherActor, DmgMsg);
 		}
 	}
-	else
+	if (ProjectileData->HasPenetration)
 	{
-		ReturnToPool();
+		
 	}
-	
+	//else
+	ReturnToPool();
 	//if (OtherComp->IsSimulatingPhysics()) OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-	
-	
 }
 
 void AWeaponProjectile::FellOutOfWorld(const UDamageType& dmgType)
@@ -94,7 +73,7 @@ void AWeaponProjectile::FellOutOfWorld(const UDamageType& dmgType)
 	ReturnToPool();
 }
 
-const float  AWeaponProjectile::GetDamage()
+float AWeaponProjectile::GetDamage_Implementation()
 {
 	return (ProjectileData) ? ProjectileData->Damage : 0;
 }

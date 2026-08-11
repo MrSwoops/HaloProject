@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "PersistentDataFunctionLibrary.generated.h"
 
+class UGameSaveFile;
+class UPlayerSettingsFile;
 /**
  * 
  */
@@ -15,15 +17,17 @@ class MYPROJECT_API UPersistentDataFunctionLibrary : public UBlueprintFunctionLi
 	GENERATED_BODY()
 public:
 
+	// UFUNCTION(BlueprintCallable, Category="Persistent Data|User Settings")
+	// static UGameSaveFile* GetGameSaveFile(UObject* ReferenceObject);
+	
 	UFUNCTION(BlueprintCallable, Category="Persistent Data")
 	static void SaveGame(UObject* ReferenceObject);
 
 	UFUNCTION(BlueprintCallable, Category="Persistent Data")
 	static void LoadGame(UObject* ReferenceObject);
 
-	UFUNCTION(BlueprintCallable, Category="Persistent Data")
-	static void SaveSettings(UObject* ReferenceObject);
-
-	UFUNCTION(BlueprintCallable, Category="Persistent Data")
-	static void LoadSettings(UObject* ReferenceObject);
+	// User Settings
+	
+	UFUNCTION(BlueprintCallable, Category="Persistent Data|User Settings")
+	static UPlayerSettingsFile* GetUserSettingsFile(UObject* ReferenceObject);
 };

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "CommonButtonBase.h"
-#include "MyProject/UI/Common/CommonActivatableWidgetPage.h"
+#include "MyProject/UI/Common/Pages/CommonActivatableWidgetPage.h"
 #include "CampaignSelectPage.generated.h"
 
 enum class EDifficulty : uint8;

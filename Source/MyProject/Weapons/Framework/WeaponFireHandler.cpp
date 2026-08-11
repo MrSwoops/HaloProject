@@ -2,9 +2,9 @@
 
 #include "FMODBlueprintStatics.h"
 #include "WeaponAmmoHandler.h"
-#include "MyProject/CharacterAnimInstance.h"
-#include "MyProject/Player/PlayerCharacter.h"
-#include "MyProject/Components/BulletPoolManager.h"
+#include "MyProject/Characters/CharacterAnimInstance.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
+#include "MyProject/ObjectPooling/BulletPoolManager.h"
 #include "MyProject/Weapons/Weapon.h"
 #include "MyProject/Weapons/WeaponData/WeaponFireData.h"
 #include "MyProject/Weapons/WeaponProjectiles/WeaponProjectile.h"

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BaseGameMode.h"
 #include "MyProject/AI/AICharacter.h"
-#include "MyProject/Components/WeaponInventory.h"
+#include "MyProject/Weapons/WeaponInventory.h"
 #include "TrainingGameMode.generated.h"
 
 class AAICharacter;

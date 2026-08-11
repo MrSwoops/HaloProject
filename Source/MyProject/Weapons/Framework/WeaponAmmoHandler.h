@@ -15,8 +15,10 @@ class UWeaponAmmoHandler : public UObject
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY()
 	ACharacter* CharacterOwner;
 	bool IsPlayerOwned = false;
+	UPROPERTY()
 	AWeapon* WeaponOwner;
 	
 	int32 MaxMagSize;
@@ -25,22 +27,19 @@ public:
 	int32 CurrentMagAmmo;
 	int32 CurrentReserveAmmo;
 
-	UAnimMontage* ReloadAnimation;
-	float ReloadOffsetTime = 0.0f;
-	UFMODEvent* ReloadSoundEvent;
+	UFUNCTION()
+	virtual bool CanReload();
 	virtual void TriggerReload();
-	virtual void OnReload();
-
-	virtual void CancelReload();
-	FTimerHandle ReloadTimerHandle;
-	UFMODAudioComponent* ReloadFMODInstance;
 
 	bool CanLootAmmo;
+	UPROPERTY()
 	UFMODEvent* LootAmmoSound;
 	
 	virtual void OnShot();
 
+	UPROPERTY()
 	UWeaponUIWidget* WeaponUI;
+	UPROPERTY()
 	UWeaponUIData* UIData;
 	virtual void AttachWeaponUI(UWeaponUIWidget* InWeaponUI);
 

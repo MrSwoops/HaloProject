@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "MyProject/Player/CustomPlayerController.h"
+#include "MyProject/Characters/Player/CustomPlayerController.h"
 #include "ForgePlayerController.generated.h"
 
 class UForgeModeHudWidget;

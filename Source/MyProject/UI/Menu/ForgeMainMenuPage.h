@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonButtonBase.h"
-#include "MyProject/UI/Common/CommonActivatableWidgetPage.h"
+#include "MyProject/UI/Common/Pages/CommonActivatableWidgetPage.h"
 #include "ForgeMainMenuPage.generated.h"
 
 /**

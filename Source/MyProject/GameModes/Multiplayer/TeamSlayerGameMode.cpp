@@ -1,6 +1,6 @@
 ﻿#include "TeamSlayerGameMode.h"
 
-#include "MyProject/GameplayCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
 #include "MyProject/EventSystem/EventDefinitions.h"
 
 void ATeamSlayerGameMode::HandlePlayerDeath(const GlobalEventManager::FPlayerKilledMessage& Msg)

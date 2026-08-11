@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combat/Interfaces/Damageable.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/IDamageable.h"
 #include "ExplosiveBarrel.generated.h"
 
 class UProjectileData;
 class UExplosiveComponent;
 
 UCLASS()
-class MYPROJECT_API AExplosiveBarrel : public AActor, public IIDamageable
+class MYPROJECT_API AExplosiveBarrel : public AActor, public IDamageable
 {
 	GENERATED_BODY()
 	
@@ -27,11 +27,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxHealth = 0;
 	float Health = 0;
-	virtual void TakeDamage(IDamageDealer* DD) override;
-	virtual void TakeDamage(const int32& Damage) override;
-	virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) override;
+
+	virtual void TakeDamage_Implementation(const FDamageMessage& DmgMsg) override;
+	virtual void Die_Implementation() override;
+	virtual bool IsDead_Implementation() const override { return bExploded;}
 
 	void Reset();
+
+private:
+	bool bExploded = false;
 
 protected:
 	// Called when the game starts or when spawned

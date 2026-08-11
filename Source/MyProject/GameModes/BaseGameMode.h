@@ -42,6 +42,7 @@ public:
 	virtual void RespawnPlayer(APlayerCharacter* Player);
 	UFUNCTION()
 	virtual void RespawnCharacter(AGameplayCharacter* Character, float RespawnDelay = -1);
+	UPROPERTY()
 	TArray<AActor*> SpawnPoints;
 
 	virtual void InitializeCharacterInventory(UWeaponInventory* Inv);

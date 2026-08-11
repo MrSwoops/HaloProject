@@ -3,8 +3,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyProject/AI/AICharacter.h"
 #include "MyProject/AI/AICharacterController.h"
-#include "MyProject/Components/WeaponInventory.h"
 #include "MyProject/Weapons/Weapon.h"
+#include "MyProject/Weapons/WeaponInventory.h"
 
 void UBTS_UpdateAgentInformation::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {

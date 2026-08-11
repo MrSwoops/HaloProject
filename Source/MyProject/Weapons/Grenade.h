@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../PooledActor.h"
 #include "GameFramework/Actor.h"
-#include "../Interfaces/DamageDealer.h"
+#include "MyProject/Combat/Interfaces/DamageDealer.h"
+#include "MyProject/ObjectPooling/PooledActor.h"
 #include "Grenade.generated.h"
 
 class UFMODEvent;
@@ -35,6 +35,7 @@ public:
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
+	void SetMovementEnabled(bool bInEnabled);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UMyProjectPickUpComponent* PickUpComponent;
 
@@ -51,20 +52,15 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 75.0f;
 	UFUNCTION(BlueprintCallable)
-	virtual const float GetDamage() override { return Damage;}
+	virtual float GetDamage_Implementation() override { return Damage;}
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
-
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	TArray<USoundBase*> ScavageSounds;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	UFMODEvent* PickupSoundEvent;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UFMODEvent* ThrowSoundEvent;
 	
 
 private:
@@ -78,7 +74,7 @@ public:
 
 	void Arm(const float& ArmTime);
 
-	void Throw();
+	void Throw(const bool& bInNewDirection = false, const FRotator& Direction = FRotator::ZeroRotator);
 
 	void Explode();
 

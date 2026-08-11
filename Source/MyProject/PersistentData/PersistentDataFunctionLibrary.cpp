@@ -4,6 +4,7 @@
 #include "PersistentDataFunctionLibrary.h"
 
 #include "PersistentDataSubsystem.h"
+#include "Settings/PlayerSettingsFile.h"
 
 void UPersistentDataFunctionLibrary::SaveGame(UObject* ReferenceObject)
 {
@@ -19,16 +20,7 @@ void UPersistentDataFunctionLibrary::LoadGame(UObject* ReferenceObject)
 	// World->GetGameInstance()->GetSubsystem<UPersistentDataSubsystem>()->;
 }
 
-void UPersistentDataFunctionLibrary::SaveSettings(UObject* ReferenceObject)
+UPlayerSettingsFile* UPersistentDataFunctionLibrary::GetUserSettingsFile(UObject* ReferenceObject)
 {
-	UWorld* World = GEngine->GetWorldFromContextObject(ReferenceObject, EGetWorldErrorMode::ReturnNull);
-	if (!World) return;
-	World->GetGameInstance()->GetSubsystem<UPersistentDataSubsystem>()->SaveSettings();
-}
-
-void UPersistentDataFunctionLibrary::LoadSettings(UObject* ReferenceObject)
-{
-	UWorld* World = GEngine->GetWorldFromContextObject(ReferenceObject, EGetWorldErrorMode::ReturnNull);
-	if (!World) return;
-	World->GetGameInstance()->GetSubsystem<UPersistentDataSubsystem>()->LoadSettings();
+	return UPlayerSettingsFile::GetPlayerSettings();
 }

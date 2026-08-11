@@ -3,15 +3,15 @@
 
 #include "AICharacterController.h"
 
-#include "MyProject/GameplayCharacter.h"
 #include "NavigationSystem.h"
 #include "TimerManager.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "MyProject/Components/WeaponInventory.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "MyProject/AI/BaseAIBlackboardKeyNames.h"
+#include "MyProject/Characters/GameplayCharacter.h"
 #include "MyProject/Weapons/Weapon.h"
+#include "MyProject/Weapons/WeaponInventory.h"
 
 
 AAICharacterController::AAICharacterController()

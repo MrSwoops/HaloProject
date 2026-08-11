@@ -4,10 +4,10 @@
 #include "EnergyShield.h"
 
 #include <FMODAudioComponent.h>
-
+#include "MyProject/Combat/HurtBox.h"
 #include "EnergyShieldShellSKM.h"
-#include "HurtBox.h"
-#include "MyProject/Player/PlayerCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 #include "MyProject/Weapons/WeaponData/ProjectileData.h"
 
 // Sets default values for this component's properties
@@ -81,33 +81,12 @@ void UEnergyShield::ResetRegenDelay()
 	GetWorld()->GetTimerManager().SetTimer(RegenDelayTimerHandle, this, &UEnergyShield::StartEnergyRegen, RegenDelay, false);
 }
 
-int32 UEnergyShield::TakeDamage(const int32& IncomingDamage)
+int32 UEnergyShield::TakeDamage(const FDamageMessage& DmgMsg)
 {
-	if (IncomingDamage <= 0) return 0;
-	if (CurrentEnergy <= 0) return IncomingDamage;
-	if (ShieldMesh) ShieldMesh->SetShieldVisibility(true);
-	
-	ResetRegenDelay();
-	int32 RemainingDamage = 0;
-	
-	if (IncomingDamage > CurrentEnergy)
-	{
-		RemainingDamage = IncomingDamage - CurrentEnergy;
-		CurrentEnergy = 0;
-		if (ShieldMesh) ShieldMesh->SetShieldMaterials(true);
-	}
-	else
-	{
-		CurrentEnergy -= IncomingDamage;
-	}
-	return RemainingDamage;
-}
-int32 UEnergyShield::TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion)
-{
-	if (BulletData->Damage <= 0) return 0;
-	if (CurrentEnergy <= 0) return BulletData->Damage;
+	if (DmgMsg.Damage <= 0) return 0;
+	if (CurrentEnergy <= 0) return DmgMsg.Damage;
 
-	if (BulletData->CritHitBehavior & InstaKHeadShield && HitRegion == Head)
+	if (DmgMsg.CritBehavior & InstaKHeadShield && DmgMsg.HitPart == EBodyPart::Head)
 	{
 		CurrentEnergy = 0;
 		return 100;
@@ -117,15 +96,15 @@ int32 UEnergyShield::TakeProjectileDamage(const UProjectileData* BulletData, con
 	ResetRegenDelay();
 	int32 RemainingDamage = 0;
 	
-	if (BulletData->Damage > CurrentEnergy)
+	if (DmgMsg.Damage > CurrentEnergy)
 	{
-		RemainingDamage = BulletData->Damage - CurrentEnergy;
+		RemainingDamage = DmgMsg.Damage - CurrentEnergy;
 		CurrentEnergy = 0;
 		if (ShieldMesh) ShieldMesh->SetShieldMaterials(true);
 	}
 	else
 	{
-		CurrentEnergy -= BulletData->Damage;
+		CurrentEnergy -= DmgMsg.Damage;
 	}
 	return RemainingDamage;
 }

@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 //#include "CommonTextBlock.h"
 #include "CommonButtonBase.h"
-#include "MyProject/UI/Common/CommonActivatableWidgetPage.h"
+#include "MyProject/UI/Common/Pages/CommonActivatableWidgetPage.h"
 #include "CustomGamesPage.generated.h"
 
 class UCommonTextBlock;

@@ -4,6 +4,7 @@
 #include "MyProject/Weapons/Framework/WeaponAmmoHandler.h"
 #include "WeaponAmmoData.generated.h"
 
+class UCharacterActionEvent;
 class UFMODEvent;
 class UWeaponAmmoHandler;
 
@@ -25,11 +26,7 @@ public:
 	int32 AmmoPerShot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Reload")
-	UAnimMontage* ReloadAnimation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Reload")
-	float ReloadOffsetTime;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Reload")
-	UFMODEvent* ReloadSoundEvent;
+	UCharacterActionEvent* ReloadAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Looting")
 	bool CanLootAmmo = true;

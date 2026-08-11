@@ -3,8 +3,9 @@
 
 #include "ExplosiveBarrel.h"
 
+#include "Combat/DamageMessage.h"
+#include "Combat/Interfaces/DamageDealer.h"
 #include "Components/ExplosiveComponent.h"
-#include "Interfaces/DamageDealer.h"
 
 // Sets default values
 AExplosiveBarrel::AExplosiveBarrel()
@@ -29,29 +30,14 @@ void AExplosiveBarrel::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-void AExplosiveBarrel::TakeDamage(IDamageDealer* DD)
+void AExplosiveBarrel::TakeDamage_Implementation(const FDamageMessage& DmgMsg)
 {
-	TakeDamage(DD->GetDamage());
-}
-
-void AExplosiveBarrel::TakeDamage(const int32& Damage)
-{
-	Health -= Damage;
+	Health -= DmgMsg.Damage;
 	if (Health <= 0)
 	{
-		ExplosiveComponent->CreateExplosion();
-		Mesh->SetSimulatePhysics(false);
-		Mesh->SetVisibility(false);
-		Mesh->SetCollisionProfileName("NoCollision");
+		Execute_Die(this);
 	}
 }
-
-void AExplosiveBarrel::TakeProjectileDamage(AWeaponProjectile* ProjectileData, const EHurtboxType& HitRegion)
-{
-	
-}
-
 
 void AExplosiveBarrel::Reset()
 {
@@ -59,4 +45,16 @@ void AExplosiveBarrel::Reset()
 	Mesh->SetCollisionProfileName("PhysicsActor");
 	Mesh->SetVisibility(true);
 	Mesh->SetSimulatePhysics(true);
+	bExploded = false;
+}
+
+void AExplosiveBarrel::Die_Implementation()
+{
+	if (bExploded) return;
+	
+	bExploded = true;
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetVisibility(false);
+	Mesh->SetCollisionProfileName("NoCollision");
+	ExplosiveComponent->CreateExplosion();
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MyProject/Combat/DamageMessage.h"
 #include "EnergyShield.generated.h"
 
 
@@ -35,8 +36,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float RegenDelay = 5.0f;
 	float CurrentRegenDelay = 0.0f;
@@ -49,11 +48,13 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY()
 	APlayerCharacter* Player;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Audio")
 	UFMODEvent* RegenSoundEvent;
 
+	UPROPERTY()
 	UFMODAudioComponent* RegenAudioComponent;
 
 	void StartEnergyRegen();
@@ -64,7 +65,6 @@ public:
 	void DisableShieldComponent();
 	void EnableShieldComponent();
 
-	int32 TakeDamage(const int32& IncomingDamage);
-	int32 TakeProjectileDamage(const UProjectileData* BulletData, const EHurtboxType& HitRegion);
+	int32 TakeDamage(const FDamageMessage& DmgMsg);
 		
 };

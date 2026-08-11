@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MyProject/Forge/ForgeBuilderGameMode.h"
 #include "MyProject/Forge/UI/ForgeModeHudWidget.h"
-#include "MyProject/Player/PlayerCharacter.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 
 
 void AForgePlayerController::BeginPlay()

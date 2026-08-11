@@ -4,10 +4,11 @@
 #include "BaseGameMode.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/Player/PlayerCharacter.h"
-#include "MyProject/Components/BulletPoolManager.h"
+#include "MyProject/Characters/GameplayCharacter.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 #include "MyProject/EventSystem/EventDefinitions.h"
 #include "MyProject/EventSystem/GlobalEventManager.h"
+#include "MyProject/ObjectPooling/BulletPoolManager.h"
 
 ABaseGameMode::ABaseGameMode() 
 {

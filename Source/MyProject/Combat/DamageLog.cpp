@@ -12,11 +12,7 @@ void FDamageLog::GetDamageInformation(AGameplayCharacter*& OutKiller, TArray<AGa
 	OutKiller = nullptr;
 	OutAssists.Reset();
 
-	// Defensive: ensure the log isn’t empty
-	if (DamageLog.Num() == 0)
-	{
-		return;
-	}
+	if (DamageLog.Num() == 0) { return; }
 
 	// Iterate backwards: newest entries first
 	for (int32 i = DamageLog.Num() - 1; i >= 0; --i)

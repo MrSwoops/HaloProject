@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "MyProject/PooledActor.h"
-#include "MyProject/Interfaces/DamageDealer.h"
+#include "MyProject/Combat/Interfaces/DamageDealer.h"
+#include "MyProject/ObjectPooling/PooledActor.h"
 #include "WeaponProjectile.generated.h"
 
 class AWeapon;
@@ -61,7 +61,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual const float GetDamage() override;
+	virtual float GetDamage_Implementation() override;
 
 	UFUNCTION()
 	virtual void LoadProjectileData(UProjectileData* InBulletData);

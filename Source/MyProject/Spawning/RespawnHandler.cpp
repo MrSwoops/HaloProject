@@ -1,7 +1,6 @@
 ﻿#include "RespawnHandler.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/GameplayCharacter.h"
 
 void URespawnHandler::RetrieveSpawnPoints()
 {

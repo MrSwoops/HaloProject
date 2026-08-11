@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ThreatTable.h"
-#include "MyProject/GameplayCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
 #include "AICharacter.generated.h"
 
 class APatrolPath;
@@ -51,7 +51,7 @@ public:
 
 	virtual void EnterCombat() override;
 	virtual void ExitCombat() override;
-	virtual void OnStartTakingFire(AGameplayCharacter* Attacker, float Damage) override;
+	virtual void OnStartTakingFire(const FDamageMessage& DmgMsg) override;
 	virtual void OnStopTakingFire() override;
 
 	//virtual void TakeProjectileDamage(AWeaponProjectile*, const EHurtboxType&) override;

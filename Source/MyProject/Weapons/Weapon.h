@@ -10,6 +10,7 @@
 #include "MyProject/GameModes/BaseGameMode.h"
 #include "Weapon.generated.h"
 
+class UCharacterActionEvent;
 enum class EWeaponStorageSlot : uint8;
 class UWeaponFireData;
 class UWeaponFireHandler;
@@ -44,17 +45,23 @@ class MYPROJECT_API AWeapon : public AActor
 public:
 	AWeapon();
 
-	void DisableWeapon();
-	void EnableWeapon();
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FGameplayTag WeaponType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	EWeaponStorageSlot StorageSlot;
-	
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	ABaseGameMode* GameMode;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FName PreferredStorageSocket = "socket_BackWeapon1";
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FName BackupStorageSocket = "socket_ThighWeaponRight";
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FName CurrentStorageSocket = "";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Actions")
+	UCharacterActionEvent* MeleeActionEvent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Actions")
+	UCharacterActionEvent* ReloadActionEvent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* SkeletalMeshComp;
@@ -68,40 +75,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	FVector MuzzleOffset;
 
-	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void AttachWeapon(AGameplayCharacter* TargetCharacter);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
-	UFMODEvent* MeleeSoundEvent;
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void OnPickup(AGameplayCharacter* TargetCharacter);
+
+	void SetPlayerOwned(const bool& bPlayerOwned);
+	UFUNCTION()
+	void DropWeapon();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
 	UFMODEvent* ScavageSoundEvent;
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Reload();
-
-	//FGameplayTagContainer ReloadTags;
 	
 public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSameWeaponType(AWeapon* OtherWeapon);
 	bool IsSameWeaponType(FGameplayTag TagToCheck);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Animations)
-	TArray<UAnimMontage*> FPMeleeAnimations;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float MeleeLungeDistance;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float MeleeDamage = 70.0f;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void Melee();
+	virtual void SetMeleeHitBox(const bool& bActive);
 
 	UPROPERTY()
 	UWeaponUIWidget* WeaponUI;
 
-	UFUNCTION()
-	void DropWeapon();
 
 protected:
 	// Called when the game starts or when spawned

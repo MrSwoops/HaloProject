@@ -62,33 +62,35 @@ void AGrenade::Tick(float DeltaTime)
 
 void AGrenade::SetActive(bool i)
 {
-	if (i)
-	{
-		ProjectileMovement->SetUpdatedComponent(RootComponent);
-	} else
+	if (!i)
 	{
 		Armed = false;
-		PickUpComponent->SetActive(i);
+		PickUpComponent->SetEnabled(i);
+		SetMovementEnabled(i);
 	}
-	ProjectileMovement->Activate(i);
 	
 	Super::SetActive(i);
 }
 
-void AGrenade::Throw()
+void AGrenade::Throw(const bool& bInNewDirection, const FRotator& Direction)
 {
-	PickUpComponent->Enabled = false;
-	PickUpComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	PickUpComponent->SetActive(false);
-	SetActive(true);
+	PickUpComponent->SetEnabled(false);
+	SetMovementEnabled(true);
+	if (bInNewDirection) SetActorRotation(Direction);
 	ProjectileMovement->SetVelocityInLocalSpace(FVector().ForwardVector * ProjectileMovement->InitialSpeed);
-	UFMODBlueprintStatics::PlayEventAtLocation(this, ThrowSoundEvent, GetActorTransform(), true);
+	Arm(FuseTime);
+}
+void AGrenade::SetMovementEnabled(bool bInEnabled)
+{
+	ProjectileMovement->SetUpdatedComponent((bInEnabled) ? RootComponent : nullptr);
+	if (bInEnabled) ProjectileMovement->Activate(true);
+	else ProjectileMovement->Deactivate();
 }
 
 
 void AGrenade::Arm(const float& ArmTime)
 {
-	PickUpComponent->Enabled = false;
+	PickUpComponent->SetEnabled(false);
 	Timer = ArmTime;
 	Armed = true;
 }

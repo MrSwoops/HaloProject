@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "BaseGameMode.h"
-#include "MyProject/Components/WeaponInventory.h"
+#include "MyProject/Weapons/WeaponInventory.h"
 #include "MultiplayerGameModeBase.generated.h"
 
 class UGameModeStateInfoWidget;

@@ -1,0 +1,174 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "PlayerCharacter.h"
+
+#include "Animation/AnimInstance.h"
+#include "Camera/CameraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/LocalPlayer.h"
+#include "Engine/World.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "MyProject/Characters/CharacterAnimInstance.h"
+#include "MyProject/Components/CharacterInteractableComponent.h"
+#include "MyProject/Components/EnergyShield.h"
+#include "MyProject/Weapons/Grenade.h"
+#include "MyProject/Weapons/WeaponInventory.h"
+#include "MyProject/Weapons/WeaponData/ProjectileData.h"
+#include "MyProject/Weapons/WeaponProjectiles/WeaponProjectile.h"
+
+APlayerCharacter::APlayerCharacter()
+{
+	// Create a CameraComponent	
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("3PCamArm"));
+	SpringArmComp->SetupAttachment(GetMesh());
+	SpringArmComp->bUsePawnControlRotation = true;
+	
+	ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	ThirdPersonCameraComponent->SetupAttachment(SpringArmComp);
+	ThirdPersonCameraComponent->SetAutoActivate(false);
+	//ThirdPersonCameraComponent->;
+
+	EnergyShield = CreateDefaultSubobject<UEnergyShield>(TEXT("Energy Shield"));
+	EnergyShield->Player = this;
+
+	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
+	FirstPersonMesh->SetCollisionProfileName("NoCollision");
+	FirstPersonMesh->SetOnlyOwnerSee(true);
+	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
+	FirstPersonMesh->bCastDynamicShadow = false;
+	FirstPersonMesh->CastShadow = false;
+	FirstPersonMesh->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+
+	Tags.Add("Player");
+}
+
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	if (auto* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->LookRigBehavior = ELookRigBehaviour::TargetComponentForwardVector;
+		AnimInstance->TargetLookRigComponent = FirstPersonCameraComponent;
+	}
+	UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
+}
+
+void APlayerCharacter::Respawn(const FVector& Location, const FRotator& Rotation)
+{
+	Super::Respawn(Location, Rotation);
+	SetCameraPersp(true);
+}
+
+
+void APlayerCharacter::Die_Implementation()
+{
+	SetCameraPersp(false);
+	Super::Die_Implementation();
+}
+
+void APlayerCharacter::TakeDamage_Implementation(const FDamageMessage& DmgMsg)
+{
+	Super::TakeDamage_Implementation(DmgMsg);
+	OnReceiveDamage.Broadcast(EnergyShield->CurrentEnergy, EnergyShield->MaxEnergy, DmgMsg.Damage);
+}
+
+void APlayerCharacter::AddInteractable(UCharacterInteractableComponent* Interactable)
+{
+	if (Interactables.Contains(Interactable)) return;
+	Interactables.Push(Interactable);
+	CurrentInteraction = Interactable;
+	UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
+}
+
+void APlayerCharacter::RemoveInteractable(UCharacterInteractableComponent* Interactable)
+{
+	Interactables.Remove(Interactable);
+	if (Interactables.Num() > 0)
+	{
+		// Assign previous if possible 
+		CurrentInteraction = Interactables[Interactables.Num() - 1];
+		UpdateInteractions.Broadcast(true, CurrentInteraction->InteractText);
+	}
+	else
+	{
+		UpdateInteractions.Broadcast(false, "");
+		CurrentInteraction = nullptr;
+	}
+}
+
+void APlayerCharacter::SetRagdoll(bool Active)
+{
+	Super::SetRagdoll(Active);
+	// if (Active)
+	// {
+	// 	FVector Velocity = GetVelocity();
+	// 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	// 	GetMesh()->SetSimulatePhysics(true);
+	// 	GetMesh()->AddImpulse(Velocity * 10, "pelvis", true);
+	// 	//FirstPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+	// 	//FirstPersonMesh->SetSimulatePhysics(true);
+	// 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	// }
+	// else
+	// {
+	// 	GetMesh()->SetSimulatePhysics(false);
+	// 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+	// 	//FirstPersonMesh->SetSimulatePhysics(false);
+	// 	//FirstPersonMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	// 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("CharacterWorldInteraction"));
+	// }
+}
+
+void APlayerCharacter::SwapCam()
+{
+	SetCameraPersp(!FirstPersonCameraComponent->IsActive());
+}
+
+void APlayerCharacter::SetCameraPersp(const bool& FirstPerson)
+{
+	if (FirstPerson)
+	{
+		GetMesh()->SetOwnerNoSee(true);
+		FirstPersonMesh->SetOwnerNoSee(false);
+		FirstPersonCameraComponent->SetActive(true);
+		ThirdPersonCameraComponent->SetActive(false);
+		Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->TargetLookRigComponent = FirstPersonCameraComponent;
+		//bUseControllerRotationYaw = true;
+	}
+	else
+	{
+		GetMesh()->SetOwnerNoSee(false);
+		FirstPersonMesh->SetOwnerNoSee(true);
+		ThirdPersonCameraComponent->SetActive(true);
+		FirstPersonCameraComponent->SetActive(false);
+		Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->TargetLookRigComponent = ThirdPersonCameraComponent;
+		//bUseControllerRotationYaw = false;
+	}
+}
+
+void APlayerCharacter::SwapGrenades()
+{
+	Super::SwapGrenades();
+	UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
+}
+
+bool APlayerCharacter::PickUpGrenade(AGrenade* Grenade)
+{
+	if (Super::PickUpGrenade(Grenade))
+	{
+		UpdateGrenadesUI.Broadcast(WeaponInventory->CurrentGrenade, WeaponInventory->RegularGrenades, WeaponInventory->PlasmaGrenades);
+		return true;
+	}
+	return false;
+}
+

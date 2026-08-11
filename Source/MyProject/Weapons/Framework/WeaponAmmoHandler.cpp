@@ -1,7 +1,7 @@
 ﻿#include "WeaponAmmoHandler.h"
 
 #include "FMODBlueprintStatics.h"
-#include "MyProject/Player/PlayerCharacter.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 #include "MyProject/UI/WeaponUIWidget.h"
 #include "MyProject/Weapons/Weapon.h"
 #include "MyProject/Weapons/WeaponData/WeaponAmmoData.h"
@@ -15,9 +15,6 @@ void UWeaponAmmoHandler::Initialize(UWeaponAmmoData* AmmoData, UWeaponUIData* In
 
 	CanLootAmmo = AmmoData->CanLootAmmo;
 	LootAmmoSound = AmmoData->LootAmmoSound;
-
-	ReloadAnimation = AmmoData->ReloadAnimation;
-	ReloadSoundEvent = AmmoData->ReloadSoundEvent;
 
 	UIData = InUIData;
 }
@@ -55,47 +52,25 @@ void UEnergyWeaponAmmoHandler::OnShot()
 	}
 }
 
+bool UWeaponAmmoHandler::CanReload()
+{
+	return CurrentMagAmmo < MaxMagSize && CurrentReserveAmmo > 0;
+}
 
 void UWeaponAmmoHandler::TriggerReload()
 {
-	if (CurrentMagAmmo == MaxMagSize || CurrentReserveAmmo <= 0 || GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle)) return;
-	if (IsPlayerOwned && ReloadAnimation != nullptr)
+	if (CanReload())
 	{
-		if (UAnimInstance* AnimInstance = Cast<APlayerCharacter>(CharacterOwner)->GetMesh1P()->GetAnimInstance()) // Get the animation object for the arms mesh
+		int32 ammoNeeded = MaxMagSize - CurrentMagAmmo;
+		if (ammoNeeded > CurrentReserveAmmo) ammoNeeded = CurrentReserveAmmo;
+		CurrentReserveAmmo -= ammoNeeded;
+		CurrentMagAmmo += ammoNeeded;
+		if (WeaponUI)
 		{
-			AnimInstance->Montage_Play(ReloadAnimation, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+			WeaponUI->UpdateAmmoUI(CurrentMagAmmo);
+			WeaponUI->SetReserveText(CurrentReserveAmmo);
 		}
 	}
-	ReloadFMODInstance = UFMODBlueprintStatics::PlayEventAttached(
-		ReloadSoundEvent,
-		WeaponOwner->GetRootComponent(),
-		"",
-		FVector::ZeroVector,
-		EAttachLocation::Type::SnapToTarget,
-		true,
-		true,
-		true
-	);
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &UWeaponAmmoHandler::OnReload, (ReloadAnimation) ? ReloadAnimation->GetPlayLength() + ReloadOffsetTime : 1.0f, false);
-}
-
-void UWeaponAmmoHandler::OnReload()
-{
-	int32 ammoNeeded = MaxMagSize - CurrentMagAmmo;
-	if (ammoNeeded > CurrentReserveAmmo) ammoNeeded = CurrentReserveAmmo;
-	CurrentReserveAmmo -= ammoNeeded;
-	CurrentMagAmmo += ammoNeeded;
-	if (WeaponUI)
-	{
-		WeaponUI->UpdateAmmoUI(CurrentMagAmmo);
-		WeaponUI->SetReserveText(CurrentReserveAmmo);
-	}
-}
-
-void UWeaponAmmoHandler::CancelReload()
-{
-	GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
-	if (ReloadFMODInstance) ReloadFMODInstance->Stop();
 }
 
 bool UWeaponAmmoHandler::LootWeapon(UWeaponAmmoHandler* LootedWeapon)
@@ -109,12 +84,6 @@ bool UWeaponAmmoHandler::LootWeapon(UWeaponAmmoHandler* LootedWeapon)
 		LootAmmoSound,
 		true
 	);
-	// FFMODEventInstance FMODInstance = UFMODBlueprintStatics::PlayEventAtLocation(
-	// 	GetWorld(), // Or a relevant UObject* from your current world context
-	// 	LootedWeapon->ScavageSoundEvent,
-	// 	GetActorTransform(),
-	// 	true // bAutoPlay: true to start playing immediately
-	// );
 	
 	if (AmmoAvailable <= AmmoNeeded) // Take all ammo and delete looted gun
 	{

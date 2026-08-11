@@ -5,11 +5,12 @@
 
 #include <FMODBlueprintStatics.h>
 
-#include "../GameplayCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Weapons/Grenade.h"
 #include "../Weapons/Weapon.h"
+#include "MyProject/Characters/GameplayCharacter.h"
+#include "MyProject/Combat/DamageMessage.h"
 
 // Sets default values for this component's properties
 UExplosiveComponent::UExplosiveComponent()
@@ -45,10 +46,13 @@ void UExplosiveComponent::CreateExplosion()
 	);
 
 	TArray<AActor*> IgnoredActors;
+	if (GetOwner()) IgnoredActors.Add(GetOwner());
 	TArray<AActor*> OutActors;
-	
+
+	auto* WorldPtr = GetWorld();
+	if (!WorldPtr) { UE_LOG(LogTemp, Warning, TEXT("Invalid world found when calling UExplosiveComponent::CreateExplosion")); return; }
 	bool bHit = UKismetSystemLibrary::SphereOverlapActors(
-		GetWorld(),
+		WorldPtr,
 		ExplosionLocation,
 		ExplosionRadius,
 		ExplodableObjectTypes,
@@ -70,13 +74,17 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 {
 	const float& Distance = FVector::Dist(ExplosionLocation, OtherActor->GetActorLocation());
 	const float& DistanceRatio = (ExplosionRadius - Distance) / ExplosionRadius;
-	if (AGameplayCharacter* Character = Cast<AGameplayCharacter>(OtherActor))
+	FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
+	Velocity.Z += 0.5f;
+	Velocity.Normalize();
+	FDamageMessage DmgMsg = FDamageMessage();
+	DmgMsg.Damage = CoreDamage * DistanceRatio;
+	DmgMsg.HitDirection = Velocity;
+	DmgMsg.HitForce = (BaseExplosionForce / 10.0f) * DistanceRatio;
+	
+	if (OtherActor->Implements<UDamageable>())
 	{
-		Character->TakeDamage(CoreDamage * DistanceRatio);
-		FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
-		Velocity.Z += 0.5f;
-		Velocity.Normalize();
-		Character->GetCharacterMovement()->Launch(Velocity * (BaseExplosionForce / 10.0f) * DistanceRatio);
+		IDamageable::Execute_TakeDamage(OtherActor, DmgMsg);
 	}
 	else if (AGrenade* Grenade = Cast<AGrenade>(OtherActor))
 	{
@@ -93,9 +101,6 @@ void UExplosiveComponent::ExplodeActor(AActor* OtherActor, UPrimitiveComponent* 
 	
 	if (OtherComp && OtherComp->IsSimulatingPhysics())
 	{
-		FVector Velocity = OtherActor->GetActorLocation() - ExplosionLocation;
-		Velocity.Z += 0.5f;
-		Velocity.Normalize();
 		OtherComp->AddImpulseAtLocation(Velocity * BaseExplosionForce * DistanceRatio, ExplosionLocation);
 	} 
 }

@@ -5,8 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
-#include "MyProject/GameplayCharacter.h"
-#include "MyProject/Player/PlayerCharacter.h"
+#include "MyProject/Characters/Player/PlayerCharacter.h"
 
 UMovementSensorComponent::UMovementSensorComponent()
 {

@@ -6,7 +6,7 @@
 
 #include "Components/Image.h"
 #include "Components/OverlaySlot.h"
-#include "MyProject/GameplayCharacter.h"
+#include "MyProject/Characters/GameplayCharacter.h"
 
 void UMovementSensorWidget::NativeConstruct()
 {

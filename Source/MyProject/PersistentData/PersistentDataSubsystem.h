@@ -16,18 +16,14 @@ class MYPROJECT_API UPersistentDataSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
-	FString SaveFileName = "SaveFile";
+	static const FString SaveFileName;
+
+	UPROPERTY(BlueprintReadOnly)
 	UGameSaveFile* CurrentSaveFile;
 
+	void MakeNewSaveFile();
+
 	void SaveData();
-
-#pragma region Settings
-
-	FString SettingsFileName = "UserSettings";
-	UPlayerSettings* CurrentSettingsFile;
-
-	void SaveSettings();
-	void LoadSettings();
-
-#pragma endregion Settings
+protected:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 };
