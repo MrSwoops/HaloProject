@@ -144,6 +144,7 @@ void AGameplayCharacter::Tick(float DeltaSeconds)
 }
 void AGameplayCharacter::UpdateLookRotation(const float& DeltaSeconds)
 {
+	if (!Controller) return;
 	const float ControlYaw = Controller->GetControlRotation().Yaw;
 	const float CharacterYaw = GetActorRotation().Yaw;
 	const float YawDifference = FMath::Abs(FMath::FindDeltaAngleDegrees(CharacterYaw, ControlYaw));
