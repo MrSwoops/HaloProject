@@ -1,10 +1,8 @@
 ﻿#include "WeaponAmmoHandler.h"
 
 #include "FMODBlueprintStatics.h"
-#include "MyProject/Characters/Player/PlayerCharacter.h"
-#include "MyProject/UI/WeaponUIWidget.h"
-#include "MyProject/Weapons/Weapon.h"
 #include "MyProject/Weapons/WeaponData/WeaponAmmoData.h"
+#include "MyProject/Weapons/WeaponUI/WeaponUIWidget.h"
 
 void UWeaponAmmoHandler::Initialize(UWeaponAmmoData* AmmoData, UWeaponUIData* InUIData)
 {

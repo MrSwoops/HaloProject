@@ -2,19 +2,15 @@
 
 
 #include "WeaponInventory.h"
-
-#include <FMODBlueprintStatics.h>
-#include <rapidjson/pointer.h>
-
 #include "Grenade.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProject/Equipment.h"
 #include "MyProject/Characters/CharacterAnimInstance.h"
 #include "MyProject/Characters/Actions/ActionHandler.h"
 #include "MyProject/Characters/Actions/CharacterActionEvent.h"
 #include "MyProject/Characters/Player/FirstPersonAnimInstance.h"
 #include "MyProject/Characters/Player/PlayerCharacter.h"
-#include "MyProject/Components/MyProjectPickUpComponent.h"
+#include "MyProject/Equipment/Equipment.h"
+#include "MyProject/Interactions/MyProjectPickUpComponent.h"
 #include "MyProject/ObjectPooling/BulletPoolManager.h"
 #include "MyProject/Weapons/WeaponData/WeaponAmmoData.h"
 

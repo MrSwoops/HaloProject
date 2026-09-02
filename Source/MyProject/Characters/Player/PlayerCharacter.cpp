@@ -6,19 +6,14 @@
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "MyProject/Characters/CharacterAnimInstance.h"
-#include "MyProject/Components/CharacterInteractableComponent.h"
-#include "MyProject/Components/EnergyShield.h"
-#include "MyProject/Weapons/Grenade.h"
+#include "MyProject/Combat/EnergyShield/EnergyShield.h"
+#include "MyProject/Interactions/CharacterInteractableComponent.h"
 #include "MyProject/Weapons/WeaponInventory.h"
-#include "MyProject/Weapons/WeaponData/ProjectileData.h"
-#include "MyProject/Weapons/WeaponProjectiles/WeaponProjectile.h"
 
 APlayerCharacter::APlayerCharacter()
 {

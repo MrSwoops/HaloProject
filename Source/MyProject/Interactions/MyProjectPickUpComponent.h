@@ -11,6 +11,7 @@ class AWeapon;
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 
 class MYPROJECT_API UMyProjectPickUpComponent : public UCharacterInteractableComponent
+
 {
 	GENERATED_BODY()
 

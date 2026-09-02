@@ -19,8 +19,8 @@ void AForgeObject::BeginPlay()
 
 void AForgeObject::OnInteract_Implementation(AForgeCharacter* InCharacter)
 {
-	if (!InCharacter) { UE_LOG(LogTemp, Error, TEXT("Invalid InteractingCharacter in AItem::OnInteract")); return; }
-	if (InCharacter->HoldingObject()) { UE_LOG(LogTemp, Error, TEXT("Invalid Inventory in AItem::OnInteract")); return; }
+	if (!InCharacter) { UE_LOG(LogTemp, Error, TEXT("Invalid InteractingCharacter in AForgeObject::OnInteract")); return; }
+	if (InCharacter->HoldingObject()) { UE_LOG(LogTemp, Error, TEXT("Already holding an object in AForgeObject::OnInteract")); return; }
 	InCharacter->PickupObject(this);
 }
 

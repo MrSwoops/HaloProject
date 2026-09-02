@@ -3,7 +3,7 @@
 
 #include "Spawner.h"
 
-#include "MyProject/Components/MyProjectPickUpComponent.h"
+#include "MyProject/Interactions/MyProjectPickUpComponent.h"
 #include "MyProject/Weapons/Weapon.h"
 
 

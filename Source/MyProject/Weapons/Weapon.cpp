@@ -3,25 +3,22 @@
 
 #include "Weapon.h"
 
-#include "../Components/MyProjectPickUpComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
-#include "EnhancedInputComponent.h"
-#include "../UI/WeaponUIWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
-#include "FMODBlueprintStatics.h"
 #include "WeaponInventory.h"
 #include "MyProject/Characters/CharacterAnimInstance.h"
-#include "MyProject/Characters/Player/FirstPersonAnimInstance.h"
 #include "MyProject/Characters/Player/PlayerCharacter.h"
 #include "MyProject/GameModes/BaseGameMode.h"
+#include "MyProject/Interactions/MyProjectPickUpComponent.h"
 #include "WeaponData/WeaponAmmoData.h"
 #include "WeaponData/WeaponFireData.h"
 #include "WeaponUI/WeaponUIData.h"
+#include "WeaponUI/WeaponUIWidget.h"
 
 // Sets default values
 AWeapon::AWeapon()

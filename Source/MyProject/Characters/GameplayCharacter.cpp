@@ -15,15 +15,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyProject/Combat/DamageMessage.h"
-#include "MyProject/Components/CharacterInteractableComponent.h"
-#include "MyProject/Components/EnergyShield.h"
-#include "MyProject/Components/EnergyShieldShellSKM.h"
 #include "MyProject/EventSystem/EventDefinitions.h"
 #include "MyProject/EventSystem/GlobalEventManager.h"
 #include "MyProject/Weapons/Grenade.h"
 #include "MyProject/Weapons/WeaponData/ProjectileData.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "MyProject/Combat/HurtBox.h"
+#include "MyProject/Combat/EnergyShield/EnergyShield.h"
+#include "MyProject/Combat/EnergyShield/EnergyShieldShellSKM.h"
+#include "MyProject/Interactions/CharacterInteractableComponent.h"
 #include "MyProject/Weapons/WeaponInventory.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);

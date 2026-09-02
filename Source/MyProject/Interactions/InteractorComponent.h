@@ -10,6 +10,9 @@ class UInteractionUI;
 class UInteractableComponent;
 class IInteractableInterface;
 
+/*
+ *	This class is in charge of managing possible interactions a character can make. When the attached
+ */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UInteractorComponent : public USceneComponent
 {
